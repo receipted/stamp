@@ -1,0 +1,133 @@
+{
+  "protocol": "card-protocol",
+  "card_id": "substrate_seed_spec_v1",
+  "spec_ref": "spec_card_v1_0_1",
+  "version": "1.0.0",
+  "title": "Substrate Seed Spec v1 — What the Sieve Is Looking For",
+
+  "intent": "Define the minimal set of structural claims that constitute a semantic governance substrate — what must be true for a system to qualify as one, what the sieve should promote, and what would invalidate the claim.",
+
+  "definitions": {
+    "substrate": "A layer beneath all application surfaces that governs how meaning is captured, transformed, and ratified — without imposing application logic.",
+    "sieve": "A pure function that takes raw claims and produces a spine: what is structurally load-bearing, what is contested, what is deferred, and what is declared loss.",
+    "spine": "The minimum set of claims that survive the sieve — structurally load-bearing, not just lexically relevant.",
+    "receipt": "A hash-linked record proving that a specific function ran on a specific input and produced a specific output. Verifiable by anyone with the input and function source.",
+    "declared_loss": "Claims explicitly dropped by the sieve with a reason. Loss is not silence — it is a first-class output.",
+    "human_gate": "A structural enforcement point where ratification requires human provenance. Not a policy — an architectural invariant.",
+    "ore": "Raw, uninterpreted material with provenance. Unshaped but witnessed. The substrate's input.",
+    "lore": "Accumulated spine across multiple sieve passes. The narrative that survives compression."
+  },
+
+  "context": {
+    "problem": "AI systems produce outputs with no chain of custody. Sessions die, context is lost, decisions are unattributable, and meaning cannot be verified independently of the actor that produced it.",
+    "mission": "Prove that semantic transformations can be purely functional, hash-receipted, and independently verifiable — such that the substrate's trustworthiness derives from math, not from trust in any actor.",
+    "scope": "The substrate itself — not any application built on top of it. Applications are projections from the substrate. The substrate is the primitive layer.",
+    "origin": "Emerged from 326 Claude Code sessions (Feb-Mar 2026) working across multiple AI surfaces with no persistent thread. The substrate is the answer to what was missing."
+  },
+
+  "transform": {
+    "input_shape": "Raw ore blobs: session files, conversation turns, terminal output, file changes — any timestamped, provenanced material.",
+    "sieve_rule": "Promote claims that are structurally load-bearing for the substrate's own development. A claim is load-bearing if: (1) it constrains what the substrate can be, (2) it defines a primitive or its relationship to other primitives, (3) it identifies a failure mode or invalidation condition, or (4) it resolves a contested design decision. Graph relevance score >= 0.1 required before keyword matching.",
+    "output_shape": "Spine: promoted claims with receipts. Contested: claims in structural tension. Deferred: real but lacking confidence signals. Declared loss: explicitly dropped with reason."
+  },
+
+  "outcome": {
+    "output_success": "Sieve produces a receipted spine where promoted claims are verifiably structural — not just topically relevant. Declared loss accounts for everything dropped.",
+    "outcome_success": "A cold agent reading only the spine can reconstruct the substrate's architecture, primitives, constraints, and failure modes without access to the original ore."
+  },
+
+  "constraints": [
+    "The sieve must be a pure function. No LLM calls in the promotion path.",
+    "Every sieve run must produce a receipt: input_hash, sieve_hash, output_hash, prev_receipt_hash.",
+    "Declared loss is mandatory — a sieve run with no declared loss is invalid.",
+    "Human gate is an architectural invariant, not a configuration option.",
+    "Graph relevance must be computed before keyword matching — graph score gates entry to the sieve.",
+    "The substrate must be substrate-agnostic: same primitives work on file systems, blockchains, or biological signal streams.",
+    "No primitive account is created until the upstream primitive produces a verified output artifact.",
+    "The receipt chain must be independently verifiable without running any LLM."
+  ],
+
+  "governance": {
+    "state": "proposed",
+    "ratifier_constraint": "At least one human ratifies canonical promotion. Ben Fenton is the human gate for v1.",
+    "invalidation_conditions": [
+      "The sieve is found to produce different outputs for identical inputs (non-determinism detected).",
+      "A receipt is found to be fabricated (hash mismatch on independent verification).",
+      "A primitive is built before its upstream gate is open (process violation).",
+      "The human gate is bypassed for any promoted claim.",
+      "Declared loss is absent from any sieve run."
+    ],
+    "note": "This spec is proposed, not ratified. It becomes canonical when Ben runs the sieve against it and the output independently verifies."
+  },
+
+  "structure": {
+    "primitives_in_order": [
+      "ore — raw, provenanced material",
+      "sieve — pure promotion function",
+      "graph — argument topology and relevance",
+      "spec — ratified, falsifiable commitment",
+      "check — pure verification function",
+      "type — semantic frame inference",
+      "lore — accumulated spine over time"
+    ],
+    "gate_sequence": [
+      "ore captured + ledger verified → sieve account",
+      "sieve produces verified spine → graph account",
+      "graph produces verified graph.v1 → type account",
+      "type produces verified frame.v1 → check account"
+    ]
+  },
+
+  "evaluation": {
+    "output_success": "Seed spec validates against spec_card_v1_0_1 required fields. Sieve run against this spec produces promoted claims that satisfy the sieve_rule definition above.",
+    "outcome_success": "The promoted spine from running the sieve against this spec contains at least one claim from each primitive category. Declared loss is non-empty. Receipt is independently verifiable.",
+    "evidence_required": [
+      "sieve_run_receipt",
+      "independent_hash_verification",
+      "cold_agent_reconstruction_test"
+    ]
+  },
+
+  "failure_modes": [
+    "Spec is too broad — everything promotes, nothing declares loss.",
+    "Spec is too narrow — real structural claims are filtered out.",
+    "Graph relevance threshold too high — misses semantically adjacent claims.",
+    "Graph relevance threshold too low — admits noise.",
+    "Sieve_rule is ambiguous — different runs produce different promoted sets.",
+    "Human gate becomes a bottleneck rather than a structural invariant.",
+    "Primitives built out of order — upstream gate bypassed."
+  ],
+
+  "degrade_policy": {
+    "must_persist": ["intent", "constraints", "definitions", "governance.invalidation_conditions", "structure.gate_sequence"],
+    "can_degrade": ["evaluation details", "failure_modes", "source_refs"],
+    "rule": "A cold agent must be able to re-run the sieve from this spec alone. The gate sequence and invalidation conditions must survive any compression."
+  },
+
+  "relations": [
+    {"type": "derives_from", "target_ref": {"ref": "spec_card_v1_0_1", "ref_type": "card"}, "strength": "strong"},
+    {"type": "derives_from", "target_ref": {"ref": "card_2026_03_23_boot_card_v1", "ref_type": "card"}, "strength": "medium"},
+    {"type": "supports", "target_ref": {"ref": "sieve_harness_v1", "ref_type": "card"}, "strength": "strong"}
+  ],
+
+  "confidence": {
+    "score": 0.7,
+    "basis": "inference",
+    "stability": "volatile"
+  },
+
+  "source_refs": [
+    "session:shadow-telegram-2026-04-07",
+    "session:shadow-telegram-2026-04-08",
+    "session:shadow-telegram-2026-04-09",
+    "ore:2026-04-09T16-58-48_fd3dafa1f733",
+    "spine:2026-04-09T22-35-00_841ef3f91e5b"
+  ],
+
+  "conformance": {
+    "profile": "strict_timeline",
+    "validated_against": "spec_card_v1_0_1",
+    "status": "proposed",
+    "note": "Proposed by Shadow (2026-04-09). Awaiting Ben's ratification after first sieve run against this spec."
+  }
+}
