@@ -71,6 +71,28 @@ These are not metaphors. They are prior art — independent proofs that the subs
 
 ---
 
+## The Semantic Ticker Tape (2026-04-11)
+
+Finance vertical — but not due diligence. Infrastructure.
+
+HFT firms have speed (FPGA, sub-microsecond execution). They don't have semantic type classification at that speed.
+
+When market-moving text arrives (Fed statement, earnings call, geopolitical event) — the edge goes to whoever correctly classifies the SEMANTIC TYPE of the signal first:
+- CONTRACT → rule change, reprice everything
+- CONSTRAINT → restriction, reduce exposure
+- UNCERTAINTY → hedge, hold position
+- WITNESS → who signed off matters (auditor change = red flag)
+
+**The product:** Real-time semantic type stream alongside price feed.
+- Pure Rust type classifier — microseconds, no model in hot path
+- Deterministic, receipted, auditable (regulators can see why trade fired)
+- Not selling trades — selling the semantic ticker tape
+- Bloomberg sells price data. Reuters sells news. Nobody sells typed semantic signals at microsecond resolution.
+
+**The gap:** Bloomberg Terminal = $24k/year. A semantic type feed on top of that at $5-10k/year is real B2B revenue.
+
+---
+
 ## Competitive Reframe
 
 **Amazon Bedrock** — named after the metaphor, not the thing. A managed AI service. They borrowed the word.
