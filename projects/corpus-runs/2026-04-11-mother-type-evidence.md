@@ -86,6 +86,24 @@ Across all three corpora, the sieve dropped:
 - **CONVERGENCE** — claims approaching the same truth from different angles (Vedic corpus, physics)
 - **APOPHASIS** — what can only be described by negation (neti neti = assert_not_exists)
 
-## Next Corpora
-- Epidemiology (WHO outbreak reports)
-- Music theory (Bach WTC harmonic analysis)
+## Additional Corpus Runs (2026-04-12)
+
+| Corpus | Claims | Promoted | Contested | Loss |
+|---|---|---|---|---|
+| Crypto (Bitcoin + Ethereum + EIPs) | 22 | 13 | 8 | 1 |
+| Music Theory (Bach WTC + counterpoint) | 14 | 7 | 7 | 0 |
+| Epidemiology (WHO + outbreak theory) | 12 | 12 | 0 | 0 |
+
+## Key Findings from New Corpora
+
+**Crypto:** Mother types all present. Gap claims (blockchain proves value not meaning; smart contracts enforce financial not semantic logic) correctly identified as CONTESTED against core Bitcoin/Ethereum facts. The substrate is the semantic layer above the crypto layer — not competing, completing.
+
+**Music Theory:** Half the claims contested — core structural tension: is harmonic resolution a law or a convention? Composers have argued this for 300 years. Sieve correctly puts it in contested. WITNESS: Bach 1722.
+
+**Epidemiology:** 12/12 promoted, 0 contested — cleanest run yet. Highly formalized field, all claims structurally non-contradictory. Every mother type present. WITNESS: WHO Jan 30 2020.
+
+## Full Corpus Count: 13
+Lean, Ayurveda, Brown v Board, Roe v Wade, Darwin, Vedic, Founding Docs, Finance, Einstein 1905, Ethics, Ship of Theseus, Riemann Hypothesis, Crypto, Music Theory, Epidemiology
+
+## Mother Types: Still Holding Across All 13
+CONTRACT, CONSTRAINT, UNCERTAINTY, RELATION, WITNESS — present in every corpus.
