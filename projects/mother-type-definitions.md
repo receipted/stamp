@@ -271,6 +271,58 @@ that have survived centuries of human use.
 
 ---
 
+## Tablet Fabrication — Material Research
+
+*Research date: 2026-04-12*
+
+Three serious candidates exist for archival tablet fabrication. Two editions recommended.
+
+### Option 1: HD-Rosetta Nickel Disc (Museum / Art Edition)
+- **Survival:** 10,000+ years
+- **Technology:** Ion beam lithography on nickel disc
+- **Resolution:** Microscale text — readable with 500x optical microscope
+- **Readout:** No power required. A civilization that rebuilds to 1700s technology can read it.
+- **Proven:** Already in use by the Long Now Foundation (Rosetta Project, 1,500 languages at the Smithsonian)
+- **Cost:** Commercial today
+- **Why this:** Most practically accessible now. Readout requires only optics, not lasers.
+  A finder rebuilding from collapse needs only a microscope to recover the content.
+
+### Option 2: 5D Optical Quartz Glass (Permanent Archival Edition)
+- **Survival:** Billions of years (stable to 1000°C, radiation-resistant, no degradation mechanism)
+- **Technology:** Femtosecond laser writes nanostructures into fused silica quartz
+- **5 dimensions:** 3 spatial + laser intensity + polarization orientation
+- **Capacity:** 360 TB per disc
+- **Readout:** Polarized microscope or femtosecond laser reader
+- **Proven:** University of Southampton stored the full human genome on one (2024)
+- **Cost:** Currently expensive, moving toward commercial
+- **Why this:** The data IS the glass. No moving parts, no degradation mechanism,
+  no power required to preserve. Outlasts any civilization that could make it.
+
+### The alumina / high ceramic option
+Chemically inert, excellent thermal stability, better than polymer media.
+Less proven than quartz glass or HD-Rosetta for this specific application.
+Good middle option if cost is the primary constraint.
+
+### Recommendation: Two Editions
+
+**Museum / art edition — HD-Rosetta nickel disc:**
+The modern limestone pillar. Five types, formal definitions, corpus evidence, all 5 layers
+etched at microscale. English, formal logic, and code. Readable with a 500x microscope
+for 10,000+ years. The Long Now Foundation uses this today.
+
+**Permanent archival edition — 5D quartz glass:**
+Same content at nanoscale in fused silica. Billions-of-years longevity. Requires more
+advanced civilization to recover — but survives anything short of planetary destruction.
+The synthetic equivalent of a stone that doesn’t exist in nature.
+
+**The Göbekli Tepe parallel:**
+The HD-Rosetta is the modern limestone pillar. The 5D quartz is what Neolithic builders
+would have carved if they had access to femtosecond lasers. Both encode the same content.
+The medium signals the intended audience: optical microscope for anyone who rebuilds,
+femtosecond reader for anyone who never fell.
+
+---
+
 ## The Göbekli Tepe Hypothesis
 
 If someone found these types 12,000 years from now — after civilizational collapse, after
