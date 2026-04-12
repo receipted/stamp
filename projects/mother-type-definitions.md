@@ -271,6 +271,33 @@ that have survived centuries of human use.
 
 ---
 
+## The Göbekli Tepe Hypothesis
+
+If someone found these types 12,000 years from now — after civilizational collapse, after
+the machines took over, after every other record had been lost — and they wanted to rebuild
+agency in a data-heavy, machine-centric world, what would they need?
+
+These five types. The Turn primitive. The boot card.
+
+Not because we designed them. Because they were already there — in Lean mathematics, in
+Ayurveda, in Darwin, in the Constitution, in the Rigveda. We found them. We didn't invent
+them. That's what makes them durable.
+
+The tablets would contain:
+- **Layer 1:** Five type symbols — structural shapes that carry meaning without language
+- **Layer 2:** Formal definitions in every known natural language + formal logic + code
+- **Layer 3:** The 13 corpus runs — proof these types were discovered not invented
+- **Layer 4:** The Turn primitive — three phrases encoding the security model in any language
+- **Layer 5:** Boot instruction — how to instantiate the type system from the tablets alone
+
+The finder runs the sieve on the tablets. The types emerge from the corpus evidence.
+The system bootstraps itself. That is second-order cybernetics in stone.
+
+Göbekli Tepe encoded something. We don't know what. This time we know exactly what
+we're encoding — and why.
+
+---
+
 ## The Code Mapping
 
 ```python
