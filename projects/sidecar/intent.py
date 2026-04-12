@@ -34,9 +34,26 @@ def h(data: bytes) -> str:
 
 
 def run(source_path: str, fn_filter=None):
+    # --- Validate input ---
+    if not os.path.exists(source_path):
+        print(f"ERROR: file not found: {source_path}")
+        sys.exit(1)
+
+    if not source_path.endswith(".py"):
+        print(f"ERROR: only Python (.py) files are supported, got: {source_path}")
+        sys.exit(1)
+
+    if os.path.getsize(source_path) == 0:
+        print(f"ERROR: empty file: {source_path}")
+        sys.exit(1)
+
     # --- Read source ---
-    raw = Path(source_path).read_bytes()
-    source = raw.decode("utf-8", errors="replace")
+    try:
+        raw = Path(source_path).read_bytes()
+        source = raw.decode("utf-8", errors="replace")
+    except (OSError, PermissionError) as e:
+        print(f"ERROR: cannot read file: {e}")
+        sys.exit(1)
     input_hash = h(raw)
 
     # --- Hash the pure functions we're using ---
@@ -63,7 +80,20 @@ def run(source_path: str, fn_filter=None):
     sys.path.insert(0, os.path.join(THINKING_LOG, "graph-lab"))
     from relevance import score_all
 
-    claims, edges = parse_function_to_graph(source)
+    # Load infer_edges_fn here (IO layer) and inject into pure kernel function
+    infer_edges_fn = None
+    type_lab_path = os.path.join(THINKING_LOG, "type-lab")
+    if os.path.exists(os.path.join(type_lab_path, "infer.py")):
+        if type_lab_path not in sys.path:
+            sys.path.insert(0, type_lab_path)
+        try:
+            import importlib
+            infer_mod = importlib.import_module("infer")
+            infer_edges_fn = infer_mod.infer_edges
+        except ImportError:
+            pass
+
+    claims, edges = parse_function_to_graph(source, infer_edges_fn=infer_edges_fn)
 
     # Score all claims by graph connectivity
     graph = {"nodes": [{"id": c["id"]} for c in claims], "edges": edges}
@@ -78,6 +108,10 @@ def run(source_path: str, fn_filter=None):
         c["graph_relevance"] = score
         if score > 0.1:
             c["evidence_refs"] = ["ast", "graph"]
+        # guarantee claims always get evidence_refs — purity is always relevant
+        if c.get("claim_type") == "guarantee":
+            c["evidence_refs"] = ["ast", "guarantee"]
+            c["graph_relevance"] = max(score, 0.5)  # guaranteed to surface
 
     # Filter to specific function if requested
     if fn_filter:
@@ -165,6 +199,7 @@ def run(source_path: str, fn_filter=None):
                 "observation": "  note:       ",
                 "constraint": "  constraint: ",
                 "hypothesis": "  uncertain:  ",
+                "guarantee": "  guarantee:  ",
             }.get(c["claim_type"], "  \u2192  ")
             text = text.replace(f"{fn}: ", "").replace(f"{fn}", "").strip()
             print(f"{prefix}{text}")
