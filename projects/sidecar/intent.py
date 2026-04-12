@@ -137,16 +137,7 @@ def run(source_path: str, fn_filter=None):
         ],
     }
 
-    # Load epistemic classifier here (IO layer) and inject into pure promote()
-    _epistemic_fn = None
-    try:
-        from src.surface.epistemic_tagger import classify_turn as _et
-        _epistemic_fn = _et
-    except ImportError:
-        pass
-
-    promoted, contested, deferred, loss = promote(claims, topic_context,
-                                                   epistemic_classify_fn=_epistemic_fn)
+    promoted, contested, deferred, loss = promote(claims, topic_context)
 
     # --- Build output ---
     spine = {
