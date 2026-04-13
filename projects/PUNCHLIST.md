@@ -51,6 +51,31 @@
 
 ---
 
+## SURFACE INTEGRATION (cross-model substrate loop)
+
+- [ ] **Wire critics.py → substrate pipeline**
+  - critics.py sends topic to multiple models in parallel
+  - Responses route through record.py → claims.py → sieve.py
+  - Output: receipted spine from multi-model review
+  - This IS the multi-model substrate loop
+  - Minimal harness: takes a topic, returns a receipted spine
+
+- [ ] **Merkle anchoring layer on turn_chain.py**
+  - Batch day's turn receipts into Merkle tree
+  - Compute root hash
+  - Free tier: write root to file (git anchor)
+  - Paid tier: submit to L2 chain
+  - ~30 lines on top of existing ledger.py
+  - Bridge between local turn chain and trustless verification
+
+- [ ] **Turn configs + persona variables**
+  - JSON config format for turn sequences (Liberating Structures protocols)
+  - Actor personas with epistemic bias (adversarial/builder/implementer/ratifier)
+  - Role-swapping: run same session with swapped personas, compare spines
+  - What's invariant across persona configurations = structurally real
+
+---
+
 ## AFTER TRACTION
 
 - [ ] Rust port of the AST parser + sieve kernel
