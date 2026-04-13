@@ -55,6 +55,34 @@ DEFAULT_PERSONAS = {
     "gemini-2.0-flash":  "builder",
 }
 
+# Lens definitions — each persona is a typed epistemic filter
+# promote_bias: claim types this lens is expected to find
+# deprioritize: claim types this lens naturally misses
+# Claims that survive AGAINST their lens bias are the strongest signal
+LENS_SPECS = {
+    "adversarial": {
+        "scope": "Find what breaks, what's missing, what cannot be true",
+        "promote_bias": ["constraint", "uncertainty"],
+        "deprioritize": ["contract", "guarantee"],
+        "failure_mode": "Produces only praise — no CONSTRAINT claims found",
+        "weights": {"constraint": 1.3, "uncertainty": 1.1, "contract": 0.7, "observation": 0.9, "guarantee": 0.8},
+    },
+    "builder": {
+        "scope": "Find what works, what's load-bearing, what the system promises",
+        "promote_bias": ["contract", "relation"],
+        "deprioritize": ["constraint", "uncertainty"],
+        "failure_mode": "Produces only criticism — no CONTRACT claims found",
+        "weights": {"contract": 1.3, "relation": 1.1, "constraint": 0.7, "uncertainty": 0.8, "guarantee": 1.0},
+    },
+    "implementer": {
+        "scope": "Find what can be built, what connects, what the dependencies are",
+        "promote_bias": ["relation", "contract"],
+        "deprioritize": ["uncertainty", "guarantee"],
+        "failure_mode": "Produces only abstractions — no RELATION claims with concrete interfaces",
+        "weights": {"relation": 1.3, "contract": 1.1, "uncertainty": 0.8, "constraint": 1.0, "guarantee": 0.9},
+    },
+}
+
 PERSONA_INSTRUCTIONS = {
     "adversarial": (
         "Your role is adversarial. Find what breaks, what's missing, what's wrong. "
@@ -104,40 +132,80 @@ def estimate_cost(spec_text: str, models: list[str]) -> dict:
     return {"per_model": estimates, "total": round(total, 4), "input_tokens_est": int(input_tokens)}
 
 
-def stage_spec_for_model(spec: dict, model: str, persona: str) -> str:
-    """Pure function. Adapt the seed spec card for a specific model + persona.
+def stage_spec_for_model(spec: dict, model: str, persona: str) -> tuple[dict, str]:
+    """Pure function. Generate a lens-scoped run-spec card + prompt string.
 
-    The spec card is the CONTRACT. The staged version adds persona instructions
-    and model-specific framing without changing the underlying spec.
+    Returns (run_spec_card, prompt_string).
+    The run_spec_card is the receipted contract for this model's run.
+    The prompt string is derived from the card — no information outside the card.
     """
+    lens = LENS_SPECS.get(persona, LENS_SPECS["builder"])
     persona_instruction = PERSONA_INSTRUCTIONS.get(persona, PERSONA_INSTRUCTIONS["builder"])
 
-    staged = f"""You are participating in a multi-model substrate review.
+    # The lens-scoped run spec card
+    run_spec = {
+        "schema": "sidecar.run-spec.v1",
+        "parent_spec_id": spec.get("card_id", "unknown"),
+        "model": model,
+        "persona": persona,
+        "lens": lens,
+        "intent": f"Review the parent spec through the {persona} lens: {lens['scope']}",
+        "constraints": [
+            f"Promote bias toward: {lens['promote_bias']}",
+            f"Do not ignore: {lens['deprioritize']} types (finding them against bias is the strongest signal)",
+            f"Failure mode to avoid: {lens['failure_mode']}",
+        ],
+        "output_contract": {
+            "promoted": "[CONTRACT] | [CONSTRAINT] | [UNCERTAINTY] | [RELATION] | [WITNESS]",
+            "contested": "[CONTESTED] claim | reason",
+            "declared_loss": "[LOSS] what is missing | why it matters",
+        },
+    }
+
+    # Prompt derived entirely from the card
+    prompt = f"""You are participating in a multi-model substrate review.
+
+RUN SPEC CARD:
+{json.dumps(run_spec, indent=2)}
+
+PARENT SEED SPEC:
+{json.dumps(spec, indent=2)}
 
 ROLE: {persona.upper()}
 {persona_instruction}
 
-SEED SPEC CARD:
-{json.dumps(spec, indent=2)}
-
-TASK:
-Read the seed spec card above. Based on your role as {persona}, produce a structured
-response with the following sections:
-
-1. PROMOTED CLAIMS (things you find structurally load-bearing)
-   Format each as: [TYPE] claim text
-   Types: CONTRACT | CONSTRAINT | UNCERTAINTY | RELATION | WITNESS
-
-2. CONTESTED CLAIMS (things you find in structural tension)
-   Format each as: [CONTESTED] claim text | reason for tension
-
-3. DECLARED LOSS (things the spec is missing or wrong about)
-   Format each as: [LOSS] what is missing | why it matters
-
-Be specific. Be structural. Avoid vague praise or criticism.
-Your output will be run through the sieve. Make your claims sievable.
+TASK: Produce structured output as specified in the run_spec output_contract above.
+Be specific. Be structural. Your output will be sieved.
 """
-    return staged
+    return run_spec, prompt
+
+
+def apply_lens_weight(claims: list[dict], persona: str) -> list[dict]:
+    """Pure function. Apply lens weights to claim confidence scores.
+
+    Claims that survive AGAINST their lens bias get the strongest boost.
+    A CONTRACT claim from an adversarial lens (which deprioritizes contracts)
+    is more significant than a CONTRACT claim from a builder lens.
+    """
+    lens = LENS_SPECS.get(persona, LENS_SPECS["builder"])
+    weights = lens["weights"]
+    deprioritized = lens["deprioritize"]
+
+    weighted = []
+    for c in claims:
+        c = dict(c)
+        ct = c.get("claim_type", "observation")
+        base_weight = weights.get(ct, 1.0)
+
+        # Extra boost if claim type is in deprioritized list — survived against the lens
+        if ct in deprioritized:
+            base_weight *= 1.2  # against-lens bonus
+            c["against_lens"] = True  # flag for later analysis
+
+        c["confidence"] = min(1.0, c.get("confidence", 0.8) * base_weight)
+        c["lens_weight"] = base_weight
+        weighted.append(c)
+    return weighted
 
 
 def parse_model_response(response_text: str, model: str, persona: str) -> list[dict]:
@@ -287,8 +355,14 @@ def run_harness(
         print("(--estimate only, no API calls)")
         return
 
-    # Stage prompts
-    staged = {m: stage_spec_for_model(spec, m, personas[m]) for m in models}
+    # Stage: generate lens-scoped run-spec cards + prompts
+    staged = {}
+    run_specs = {}
+    for m in models:
+        run_spec, prompt = stage_spec_for_model(spec, m, personas[m])
+        staged[m] = prompt
+        run_specs[m] = run_spec
+        print(f"  Staged for {m} ({personas[m]}): lens={run_spec['lens']['scope'][:50]}...")
 
     # Run models
     all_claims = []
@@ -301,7 +375,8 @@ def run_harness(
             result = run_model(model, personas[model], staged[model])
             results[model] = result
             print(f"{result['status']} ({result['elapsed']}s, {len(result['claims'])} claims)")
-            all_claims.extend(result["claims"])
+            weighted = apply_lens_weight(result["claims"], personas[model])
+            all_claims.extend(weighted)
     else:
         print("Running models in parallel...")
         with ThreadPoolExecutor(max_workers=len(models)) as executor:
@@ -315,7 +390,8 @@ def run_harness(
                 results[model] = result
                 print(f"  {model} ({personas[model]}): {result['status']} "
                       f"({result['elapsed']}s, {len(result['claims'])} claims)")
-                all_claims.extend(result["claims"])
+                weighted = apply_lens_weight(result["claims"], personas[model])
+                all_claims.extend(weighted)
 
     if not all_claims:
         print("\nERROR: no claims produced")

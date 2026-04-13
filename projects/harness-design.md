@@ -174,12 +174,27 @@ def estimate_run_cost(
 - Model × Persona: epistemic role (what the model is trying to do)
 - A single model can be assigned any persona regardless of tier
 
-**Staging object format:** JSON seed spec card — adapted per model.
+**Staging object format:** JSON seed spec card with lens — adapted per model.
 - Base spec card defines the topic, constraints, and what to find
-- Each model gets a version adapted to its idiom (not rewritten, adapted)
-- The spec card is the CONTRACT for the run — what each model is asked to do
-- Output of each model run is typed claims against that contract
-- The spec card hash is part of the receipt — proves what each model was asked
+- Each model gets a lens-scoped version: same spec + persona as epistemic filter
+- The lens defines: promote_bias, deprioritize, scope, failure_mode
+- The spec card hash is part of the receipt — proves what each model was asked and through what lens
+
+**Lens-weighted sieve:**
+- The sieve uses the lens as a prior when scoring claims
+- Constraint claims from adversarial lens: weight x1.3 (expected)
+- Constraint claims from builder lens: weight x1.5 (unexpected = stronger signal)
+- The symmetry catch: claims that survive AGAINST their lens bias are the most load-bearing
+- Cross-lens convergence: what promotes through all lenses regardless of bias = structurally real
+
+```python
+lens_weights = {
+    'adversarial': {'constraint': 1.3, 'contract': 0.7, 'uncertainty': 1.1},
+    'builder':     {'contract': 1.3, 'constraint': 0.7, 'relation': 1.1},
+    'implementer': {'relation': 1.3, 'contract': 1.1, 'uncertainty': 0.9},
+}
+# claim that survives adversarial lens despite being contract type = strongest CONTRACT signal
+```
 
 ---
 
