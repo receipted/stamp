@@ -13,462 +13,417 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg); color: var(--text);
       height: 100vh; display: flex; flex-direction: column; overflow: hidden;
     }
 
-    /* Header */
     .header {
       padding: 8px 16px; background: var(--bg2);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-    .header-title { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.05em; text-transform: uppercase; }
-    .turn-count { color: var(--text3); font-size: 11px; margin-left: auto; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .header-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .header-count { font-size: 11px; color: var(--text3); margin-left: auto; }
 
-    /* Global tabs */
-    .global-tabs {
+    /* Two tabs */
+    .tabs {
       display: flex; background: var(--bg2);
       border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-    .global-tab {
-      padding: 10px 18px; font-size: 12px; font-weight: 500;
-      color: var(--text3); cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s; user-select: none;
+    .tab {
+      padding: 10px 20px; font-size: 12px; font-weight: 500;
+      color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all 0.1s; user-select: none; display: flex; align-items: center; gap: 6px;
     }
-    .global-tab:hover { color: var(--text2); }
-    .global-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-    .global-tab .badge {
-      display: inline-block; margin-left: 6px; padding: 1px 5px;
-      background: var(--card); border-radius: 10px;
-      font-size: 10px; color: var(--text3);
-    }
-    .global-tab.active .badge { background: var(--accent); color: #000; }
+    .tab:hover { color: var(--text2); }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    .tab .n { font-size: 10px; background: var(--card); padding: 1px 5px; border-radius: 10px; color: var(--text3); }
+    .tab.active .n { background: var(--accent); color: #000; }
 
     /* Source filter */
-    .source-bar {
-      display: flex; gap: 2px; padding: 6px 12px;
-      background: var(--bg); border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+    .src-bar {
+      display: flex; gap: 2px; padding: 5px 12px;
+      border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg);
     }
-    .src-btn {
-      padding: 3px 10px; font-size: 11px; color: var(--text3);
-      cursor: pointer; border-radius: 3px; transition: all 0.1s;
-    }
-    .src-btn:hover { background: var(--card); color: var(--text2); }
-    .src-btn.active { background: var(--card); color: var(--accent); }
+    .src { padding: 3px 9px; font-size: 11px; color: var(--text3); cursor: pointer; border-radius: 3px; }
+    .src:hover { background: var(--card); color: var(--text2); }
+    .src.on { background: var(--card); color: var(--accent); }
 
-    /* Breadcrumb */
-    .breadcrumb {
-      display: none; align-items: center; gap: 6px;
-      padding: 6px 14px; background: rgba(88,166,255,0.05);
-      border-bottom: 1px solid var(--border); font-size: 11px;
-      color: var(--text3); flex-shrink: 0;
-    }
-    .breadcrumb.visible { display: flex; }
-    .breadcrumb a { color: var(--accent); cursor: pointer; text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
+    /* Content scroll */
+    .content { flex: 1; overflow-y: auto; padding: 10px 12px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    /* Content */
-    .content { flex: 1; overflow-y: auto; padding: 10px 12px; min-height: 0; }
-
-    /* Nuggets */
+    /* ── NUGGET ── */
     .nugget {
-      padding: 10px 12px; border-radius: 6px; margin-bottom: 6px;
-      border: 1px solid var(--border); background: var(--card);
-      cursor: pointer; transition: border-color 0.1s;
-    }
-    .nugget:hover { border-color: var(--text3); }
-    .nugget.highlighted { border-color: var(--accent); background: rgba(88,166,255,0.06); }
-    .nugget.needs-attention { border-color: var(--red); background: rgba(248,81,73,0.05); }
-    .nugget-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .nflag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
-    .flag-attention { background: rgba(248,81,73,0.2); color: var(--red); }
-    .flag-promoted  { background: rgba(63,185,80,0.15); color: var(--green); }
-    .flag-contested { background: rgba(210,153,34,0.15); color: var(--yellow); }
-    .nugget-src { font-size: 10px; color: var(--text3); }
-    .nugget-text { font-size: 12px; color: var(--text); line-height: 1.5; }
-    .nugget-link { font-size: 10px; color: var(--accent); margin-top: 5px; cursor: pointer; }
-    .nugget-link:hover { text-decoration: underline; }
-
-    /* Claims */
-    .claim {
-      display: flex; gap: 8px; align-items: flex-start;
-      padding: 8px 10px; border-radius: 5px; margin-bottom: 5px;
-      background: var(--card); border: 1px solid transparent;
-      font-size: 12px; cursor: pointer; transition: border-color 0.1s;
-    }
-    .claim:hover { border-color: var(--border); }
-    .claim.highlighted { border-color: var(--accent); background: rgba(88,166,255,0.06); }
-    .ctype {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; padding: 2px 5px; border-radius: 3px;
-      white-space: nowrap; flex-shrink: 0; margin-top: 1px;
-    }
-    .ct-contract    { background: rgba(88,166,255,0.15); color: var(--accent); }
-    .ct-constraint  { background: rgba(248,81,73,0.15); color: var(--red); }
-    .ct-uncertainty { background: rgba(210,153,34,0.15); color: var(--yellow); }
-    .ct-relation    { background: rgba(63,185,80,0.15); color: var(--green); }
-    .ct-witness     { background: rgba(188,140,255,0.15); color: var(--purple); }
-    .ct-contested   { background: rgba(255,166,87,0.15); color: var(--orange); }
-    .ct-loss        { background: rgba(110,118,129,0.1); color: var(--text3); }
-    .claim-body { flex: 1; }
-    .claim-text { color: var(--text); line-height: 1.4; }
-    .claim-meta { font-size: 10px; color: var(--text3); margin-top: 3px; display: flex; gap: 10px; }
-    .claim-link { color: var(--accent); cursor: pointer; }
-    .claim-link:hover { text-decoration: underline; }
-
-    /* Turns */
-    .turn {
-      border-radius: 6px; margin-bottom: 6px;
-      border: 1px solid var(--border); overflow: hidden;
+      border: 1px solid var(--border); border-radius: 7px;
+      margin-bottom: 8px; overflow: hidden; background: var(--card);
       transition: border-color 0.1s;
     }
-    .turn.highlighted { border-color: var(--accent); }
-    .turn-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 10px; background: var(--card);
-      cursor: pointer; font-size: 11px;
+    .nugget.attn { border-color: var(--red); }
+    .nugget.highlighted { border-color: var(--accent); }
+
+    .nugget-top {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; cursor: pointer;
     }
-    .turn-header:hover { background: #21262d; }
-    .actor-badge {
+    .nugget-top:hover { background: #21262d; }
+
+    .nflag {
       font-size: 9px; font-weight: 700; padding: 2px 6px;
-      border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
-      flex-shrink: 0;
+      border-radius: 3px; text-transform: uppercase; flex-shrink: 0; margin-top: 1px;
     }
-    .ab-human  { background: rgba(88,166,255,0.15); color: var(--accent); }
-    .ab-claude { background: rgba(188,140,255,0.15); color: var(--purple); }
-    .ab-codex  { background: rgba(63,185,80,0.15); color: var(--green); }
-    .ab-system { background: rgba(110,118,129,0.1); color: var(--text3); }
-    .turn-preview { flex: 1; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nf-attn { background: rgba(248,81,73,0.2); color: var(--red); }
+    .nf-ok   { background: rgba(63,185,80,0.15); color: var(--green); }
+    .nf-cont { background: rgba(210,153,34,0.15); color: var(--yellow); }
+
+    .nugget-body { flex: 1; min-width: 0; }
+    .nugget-summary {
+      font-size: 12px; color: var(--text); line-height: 1.5;
+      /* one line truncated when collapsed */
+    }
+    .nugget-meta {
+      display: flex; gap: 8px; margin-top: 4px; font-size: 10px; color: var(--text3);
+      align-items: center;
+    }
+    .nugget-src { }
+    .nugget-time { }
+
+    .expand-arrow {
+      flex-shrink: 0; color: var(--text3); font-size: 11px;
+      transition: transform 0.15s; margin-top: 3px;
+    }
+    .nugget.open .expand-arrow { transform: rotate(90deg); }
+
+    /* Accordion detail */
+    .nugget-detail {
+      display: none; border-top: 1px solid var(--border);
+      padding: 8px 12px; background: var(--bg);
+    }
+    .nugget.open .nugget-detail { display: block; }
+
+    /* Claims inside nugget */
+    .ic {
+      display: flex; gap: 7px; align-items: flex-start;
+      padding: 5px 0; border-bottom: 1px solid rgba(48,54,61,0.5); font-size: 11px;
+    }
+    .ic:last-child { border-bottom: none; }
+    .ict {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 2px 5px; border-radius: 3px;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .ict-co { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .ict-cn { background: rgba(248,81,73,0.15); color: var(--red); }
+    .ict-un { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .ict-re { background: rgba(63,185,80,0.15); color: var(--green); }
+    .ict-wi { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .ict-ct { background: rgba(255,166,87,0.15); color: var(--orange); }
+    .ict-lo { background: rgba(110,118,129,0.1); color: var(--text3); }
+
+    .ic-text { color: var(--text2); flex: 1; line-height: 1.4; }
+    .ic-conf { font-size: 9px; color: var(--text3); white-space: nowrap; }
+
+    .src-link {
+      display: inline-block; margin-top: 8px; font-size: 10px;
+      color: var(--accent); cursor: pointer;
+    }
+    .src-link:hover { text-decoration: underline; }
+
+    /* ── TURN (sediment) ── */
+    .turn {
+      border: 1px solid var(--border); border-radius: 6px;
+      margin-bottom: 6px; overflow: hidden;
+    }
+    .turn.highlighted { border-color: var(--accent); }
+    .turn-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; background: var(--card); cursor: pointer; font-size: 11px;
+    }
+    .turn-head:hover { background: #21262d; }
+    .ab {
+      font-size: 9px; font-weight: 700; padding: 2px 6px;
+      border-radius: 3px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .ab-h { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .ab-c { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .ab-x { background: rgba(63,185,80,0.15); color: var(--green); }
+    .ab-s { background: rgba(110,118,129,0.1); color: var(--text3); }
+    .turn-pre { flex: 1; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .turn-time { color: var(--text3); font-size: 10px; white-space: nowrap; }
     .turn-body {
       display: none; padding: 8px 10px; font-size: 12px;
-      line-height: 1.5; color: var(--text2); background: var(--bg);
+      line-height: 1.6; color: var(--text2); background: var(--bg);
       border-top: 1px solid var(--border); white-space: pre-wrap; word-break: break-word;
     }
-    .turn-body.open { display: block; }
+    .turn.open .turn-body { display: block; }
 
-    .empty { color: var(--text3); font-size: 11px; text-align: center; padding: 30px 20px; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .empty { color: var(--text3); font-size: 11px; text-align: center; padding: 32px; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="status-dot" id="statusDot"></div>
+  <div class="dot" id="dot"></div>
   <div class="header-title">Cockpit</div>
-  <div class="turn-count" id="turnCount">0 turns</div>
+  <div class="header-count" id="hcount">0 turns</div>
 </div>
 
-<!-- Global tabs -->
-<div class="global-tabs">
-  <div class="global-tab active" id="gtab-nuggets" onclick="setGlobalTab('nuggets')">
-    Nuggets <span class="badge" id="badge-nuggets">0</span>
+<div class="tabs">
+  <div class="tab active" id="t-nuggets" onclick="tab('nuggets')">
+    Nuggets <span class="n" id="n-nuggets">0</span>
   </div>
-  <div class="global-tab" id="gtab-sieved" onclick="setGlobalTab('sieved')">
-    Sieved <span class="badge" id="badge-sieved">0</span>
-  </div>
-  <div class="global-tab" id="gtab-sediment" onclick="setGlobalTab('sediment')">
-    Sediment <span class="badge" id="badge-sediment">0</span>
+  <div class="tab" id="t-sediment" onclick="tab('sediment')">
+    Sediment <span class="n" id="n-sediment">0</span>
   </div>
 </div>
 
-<!-- Source filter -->
-<div class="source-bar">
-  <div class="src-btn active" onclick="setSource('all')">All</div>
-  <div class="src-btn" onclick="setSource('telegram')">Telegram</div>
-  <div class="src-btn" onclick="setSource('claude-code')">Claude Code</div>
-  <div class="src-btn" onclick="setSource('codex')">Codex</div>
-  <div class="src-btn" onclick="setSource('api')">API</div>
+<div class="src-bar">
+  <div class="src on" onclick="src(this,'all')">All</div>
+  <div class="src" onclick="src(this,'telegram')">Telegram</div>
+  <div class="src" onclick="src(this,'claude-code')">Claude Code</div>
+  <div class="src" onclick="src(this,'codex')">Codex</div>
+  <div class="src" onclick="src(this,'api')">API</div>
 </div>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb" id="breadcrumb">
-  <span id="crumb-from"></span>
-  <span>›</span>
-  <span id="crumb-to"></span>
-  <span style="margin-left:auto; cursor:pointer; color:var(--text3);" onclick="clearBreadcrumb()">✕</span>
-</div>
-
-<!-- Content -->
 <div class="content" id="content"></div>
 
 <script>
-// ============================================================
-// STATE
-// ============================================================
-let activeGlobalTab = 'nuggets';
-let activeSource = 'all';
-let highlightedId = null;
+let activeTab = 'nuggets';
+let activeSrc = 'all';
+let turns = [], nuggets = [];
+let _uid = 0;
+const uid = () => 'u' + (++_uid);
 
-let turns = [];
-let claims = [];
-let nuggets = [];
-
-// ============================================================
-// TABS & FILTERS
-// ============================================================
-function setGlobalTab(tab, highlightId) {
-  activeGlobalTab = tab;
-  document.querySelectorAll('.global-tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('gtab-' + tab).classList.add('active');
-  render();
-  if (highlightId) {
-    setTimeout(() => highlight(highlightId), 80);
-  }
-}
-
-function setSource(src) {
-  activeSource = src;
-  document.querySelectorAll('.src-btn').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
+// ── TAB / SOURCE ──
+function tab(t) {
+  activeTab = t;
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('t-' + t).classList.add('active');
   render();
 }
 
-function filterBySource(items) {
-  if (activeSource === 'all') return items;
-  return items.filter(item => {
-    const s = (item.stream || item.source || '').toLowerCase().replace(/[^a-z]/g, '');
-    const t = activeSource.replace('-', '');
-    return s.includes(t);
+function src(el, s) {
+  activeSrc = s;
+  document.querySelectorAll('.src').forEach(e => e.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function filterSrc(arr) {
+  if (activeSrc === 'all') return arr;
+  return arr.filter(x => {
+    const s = (x.stream || x.source || '').toLowerCase().replace(/[^a-z]/g,'');
+    return s.includes(activeSrc.replace('-',''));
   });
 }
 
-// ============================================================
-// BREADCRUMB
-// ============================================================
-function showBreadcrumb(from, to) {
-  const bc = document.getElementById('breadcrumb');
-  document.getElementById('crumb-from').textContent = from;
-  document.getElementById('crumb-to').textContent = to;
-  bc.classList.add('visible');
-}
-
-function clearBreadcrumb() {
-  document.getElementById('breadcrumb').classList.remove('visible');
-  highlightedId = null;
-  render();
-}
-
-// ============================================================
-// HIGHLIGHT
-// ============================================================
-function highlight(id) {
-  highlightedId = id;
-  const el = document.getElementById('item-' + id);
-  if (!el) return;
-  el.classList.add('highlighted');
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  // Auto-expand turns
-  if (el.classList.contains('turn')) {
-    el.querySelector('.turn-body')?.classList.add('open');
-  }
-  setTimeout(() => el.classList.remove('highlighted'), 3000);
-}
-
-// ============================================================
-// NAVIGATION — nugget → claim → turn
-// ============================================================
-function goToSieved(claimId, fromText) {
-  showBreadcrumb('Nuggets: ' + fromText.slice(0, 40) + '...', 'Sieved claim');
-  setGlobalTab('sieved', claimId);
-}
-
-function goToSediment(turnId, fromText) {
-  showBreadcrumb('Sieved: ' + fromText.slice(0, 40) + '...', 'Source turn');
-  setGlobalTab('sediment', turnId);
-}
-
-// ============================================================
-// RENDER
-// ============================================================
+// ── RENDER ──
 function render() {
-  const content = document.getElementById('content');
-  const filtered = {
-    nuggets: filterBySource(nuggets),
-    claims: filterBySource(claims),
-    turns: filterBySource(turns),
-  };
-
-  // Update badges
-  document.getElementById('badge-nuggets').textContent = filtered.nuggets.length;
-  document.getElementById('badge-sieved').textContent = filtered.claims.length;
-  document.getElementById('badge-sediment').textContent = filtered.turns.length;
-
-  if (activeGlobalTab === 'nuggets') renderNuggets(filtered.nuggets, content);
-  else if (activeGlobalTab === 'sieved') renderSieved(filtered.claims, content);
-  else renderSediment(filtered.turns, content);
+  const c = document.getElementById('content');
+  const fn = filterSrc(nuggets);
+  const ft = filterSrc(turns);
+  document.getElementById('n-nuggets').textContent = fn.length;
+  document.getElementById('n-sediment').textContent = ft.length;
+  if (activeTab === 'nuggets') renderNuggets(fn, c);
+  else renderSediment(ft, c);
 }
 
-function renderNuggets(items, container) {
-  if (!items.length) { container.innerHTML = '<div class="empty">No nuggets yet. Waiting for sieve output...</div>'; return; }
-  container.innerHTML = '';
+function renderNuggets(items, c) {
+  if (!items.length) { c.innerHTML = '<div class="empty">Waiting for sieve output…</div>'; return; }
+  c.innerHTML = '';
   [...items].reverse().forEach(n => {
     const div = document.createElement('div');
-    div.className = 'nugget' + (n.needs_attention ? ' needs-attention' : '');
-    div.id = 'item-' + n.id;
-    const flag = n.needs_attention ? '<span class="nflag flag-attention">⚡ NEEDS ATTENTION</span>'
-      : n.is_contested ? '<span class="nflag flag-contested">🔄 CONTESTED</span>'
-      : '<span class="nflag flag-promoted">✓ PROMOTED</span>';
-    div.innerHTML = `
-      <div class="nugget-meta">${flag}<span class="nugget-src">${esc(n.stream || n.source || '')}</span></div>
-      <div class="nugget-text">${esc(n.text || '')}</div>
-      ${n.claim_id ? `<div class="nugget-link" onclick="goToSieved('${n.claim_id}', '${esc(n.text || '')}')">→ view in sieved</div>` : ''}
-    `;
-    container.appendChild(div);
-  });
-}
+    const attn = n.needs_attention;
+    const cont = n.has_contested;
+    div.className = 'nugget' + (attn ? ' attn' : '');
+    div.id = 'nug-' + n.id;
 
-function renderSieved(items, container) {
-  if (!items.length) { container.innerHTML = '<div class="empty">No sieved claims yet...</div>'; return; }
-  container.innerHTML = '';
-  [...items].reverse().forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'claim';
-    div.id = 'item-' + c.id;
-    const [tc, tl] = typeInfo(c.claim_type);
+    const flag = attn  ? `<span class="nflag nf-attn">⚡ Attention</span>`
+               : cont ? `<span class="nflag nf-cont">🔄 Contested</span>`
+               :        `<span class="nflag nf-ok">✓ Promoted</span>`;
+
+    // Build inner claims html
+    let claimsHtml = '';
+    (n.claims||[]).forEach(cl => {
+      const [cc, cl_] = ctInfo(cl.claim_type);
+      claimsHtml += `
+        <div class="ic">
+          <span class="ict ${cc}">${cl_}</span>
+          <span class="ic-text">${esc(cl.text||'')}</span>
+          <span class="ic-conf">${cl.confidence ? (cl.confidence*100|0)+'%' : ''}</span>
+        </div>`;
+    });
+
+    const turnLink = n.turn_id
+      ? `<span class="src-link" onclick="goSediment('${n.turn_id}')">→ view source turn</span>` : '';
+
     div.innerHTML = `
-      <span class="ctype ${tc}">${tl}</span>
-      <div class="claim-body">
-        <div class="claim-text">${esc(c.text || '')}</div>
-        <div class="claim-meta">
-          <span>${esc(c.source || c.model || '')}</span>
-          ${c.turn_id ? `<span class="claim-link" onclick="goToSediment('${c.turn_id}', '${esc(c.text || '')}')">→ source turn</span>` : ''}
+      <div class="nugget-top" onclick="toggleNug('${n.id}')">
+        ${flag}
+        <div class="nugget-body">
+          <div class="nugget-summary">${esc(n.summary||n.text||'')}</div>
+          <div class="nugget-meta">
+            <span class="nugget-src">${esc(n.stream||n.source||'')}</span>
+            <span class="nugget-time">${n.time||''}</span>
+          </div>
         </div>
+        <div class="expand-arrow">›</div>
       </div>
-    `;
-    container.appendChild(div);
+      <div class="nugget-detail">
+        ${claimsHtml || '<div style="color:var(--text3);font-size:11px;padding:4px 0">No detailed claims</div>'}
+        ${turnLink}
+      </div>`;
+    c.appendChild(div);
   });
 }
 
-function renderSediment(items, container) {
-  if (!items.length) { container.innerHTML = '<div class="empty">No turns captured yet...</div>'; return; }
-  container.innerHTML = '';
+function renderSediment(items, c) {
+  if (!items.length) { c.innerHTML = '<div class="empty">No turns captured yet…</div>'; return; }
+  c.innerHTML = '';
   [...items].reverse().forEach(t => {
     const div = document.createElement('div');
     div.className = 'turn';
-    div.id = 'item-' + t.id;
-    const ac = actorClass(t.actor);
-    const as = actorShort(t.actor);
-    const preview = (t.text || '').slice(0, 90) + ((t.text || '').length > 90 ? '…' : '');
-    const time = t.timestamp ? new Date(t.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+    div.id = 'turn-' + t.id;
+    const ac = aClass(t.actor), as = aShort(t.actor);
+    const pre = (t.text||'').slice(0,90) + ((t.text||'').length>90?'…':'');
+    const tm = t.timestamp ? new Date(t.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
     div.innerHTML = `
-      <div class="turn-header" onclick="toggleTurn('${t.id}')">
-        <span class="actor-badge ${ac}">${as}</span>
-        <span class="turn-preview">${esc(preview)}</span>
-        <span class="turn-time">${time}</span>
+      <div class="turn-head" onclick="toggleTurn('${t.id}')">
+        <span class="ab ${ac}">${as}</span>
+        <span class="turn-pre">${esc(pre)}</span>
+        <span class="turn-time">${tm}</span>
       </div>
-      <div class="turn-body" id="tbody-${t.id}">${esc(t.text || '')}</div>
-    `;
-    container.appendChild(div);
+      <div class="turn-body">${esc(t.text||'')}</div>`;
+    c.appendChild(div);
   });
 }
 
+// ── TOGGLES ──
+function toggleNug(id) {
+  document.getElementById('nug-'+id)?.classList.toggle('open');
+}
 function toggleTurn(id) {
-  document.getElementById('tbody-' + id)?.classList.toggle('open');
+  document.getElementById('turn-'+id)?.classList.toggle('open');
 }
 
-// ============================================================
-// HELPERS
-// ============================================================
-function typeInfo(type) {
+// ── NAVIGATION: nugget → sediment ──
+function goSediment(turnId) {
+  tab('sediment');
+  setTimeout(() => {
+    const el = document.getElementById('turn-'+turnId);
+    if (!el) return;
+    el.classList.add('highlighted', 'open');
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(() => el.classList.remove('highlighted'), 3000);
+  }, 80);
+}
+
+// ── HELPERS ──
+function ctInfo(type) {
   const m = {
-    fact:        ['ct-contract',    'CONTRACT'],
-    constraint:  ['ct-constraint',  'CONSTRAINT'],
-    hypothesis:  ['ct-uncertainty', 'UNCERTAINTY'],
-    observation: ['ct-relation',    'RELATION'],
-    guarantee:   ['ct-witness',     'WITNESS'],
-    contested:   ['ct-contested',   'CONTESTED'],
+    fact:        ['ict-co','CONTRACT'],
+    constraint:  ['ict-cn','CONSTRAINT'],
+    hypothesis:  ['ict-un','UNCERTAINTY'],
+    observation: ['ict-re','RELATION'],
+    guarantee:   ['ict-wi','WITNESS'],
+    contested:   ['ict-ct','CONTESTED'],
+    loss:        ['ict-lo','LOSS'],
   };
-  return m[type] || ['ct-relation', (type||'').toUpperCase()];
+  return m[type] || ['ict-re', (type||'').toUpperCase()];
 }
-
-function actorClass(a) {
-  if (!a) return 'ab-system';
+function aClass(a) {
+  if (!a) return 'ab-s';
   a = a.toLowerCase();
-  if (a.includes('human')) return 'ab-human';
-  if (a.includes('claude') || a.includes('sonnet') || a.includes('opus')) return 'ab-claude';
-  if (a.includes('codex')) return 'ab-codex';
-  return 'ab-system';
+  if (a.includes('human')) return 'ab-h';
+  if (a.includes('claude')||a.includes('sonnet')||a.includes('opus')) return 'ab-c';
+  if (a.includes('codex')) return 'ab-x';
+  return 'ab-s';
 }
-
-function actorShort(a) {
+function aShort(a) {
   if (!a) return 'sys';
-  const p = a.split(':');
-  return p[p.length - 1].split('-')[0].slice(0, 8);
+  return a.split(':').pop().split('-')[0].slice(0,8);
 }
-
 function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ============================================================
-// DATA INGESTION
-// ============================================================
-let _id = 0;
-function uid() { return 'i' + (++_id); }
-
+// ── INGEST ──
 function ingestTurn(t) {
   t.id = t.id || uid();
   turns.push(t);
-  document.getElementById('turnCount').textContent = turns.length + ' turns';
+  document.getElementById('hcount').textContent = turns.length + ' turns';
 }
 
+// Ingest a nugget — comes with its supporting claims bundled
+function ingestNugget(n) {
+  n.id = n.id || uid();
+  nuggets.push(n);
+}
+
+// Convenience: ingest a raw claim and auto-create a nugget
 function ingestClaim(c) {
   c.id = c.id || uid();
-  claims.push(c);
   const attn = c.claim_type === 'constraint' && (c.confidence||0) > 0.85;
-  nuggets.push({
-    id: uid(), text: c.text, claim_id: c.id, turn_id: c.turn_id,
-    source: c.source, stream: c.stream,
-    needs_attention: attn, is_contested: c.contested,
-  });
+  // Find or create nugget for this turn
+  let nug = nuggets.find(n => n.turn_id === c.turn_id && n.stream === c.stream);
+  if (!nug) {
+    nug = {
+      id: uid(),
+      summary: c.text,
+      turn_id: c.turn_id,
+      source: c.source,
+      stream: c.stream,
+      time: c.timestamp ? new Date(c.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '',
+      claims: [],
+      needs_attention: false,
+      has_contested: false,
+    };
+    nuggets.push(nug);
+  }
+  nug.claims.push(c);
+  if (attn) nug.needs_attention = true;
+  if (c.contested) nug.has_contested = true;
 }
 
-// ============================================================
-// SSE + DEMO
-// ============================================================
-function connectSSE() {
+// ── SSE ──
+function connect() {
   try {
     const es = new EventSource('http://localhost:7788/stream');
-    es.onopen = () => { document.getElementById('statusDot').style.background = 'var(--green)'; };
+    es.onopen = () => document.getElementById('dot').style.background = 'var(--green)';
     es.onmessage = e => {
       try {
         const d = JSON.parse(e.data);
         if (d.type === 'turn') ingestTurn(d);
         else if (d.type === 'claim') ingestClaim(d);
+        else if (d.type === 'nugget') ingestNugget(d);
         render();
       } catch {}
     };
-    es.onerror = () => {
-      document.getElementById('statusDot').style.background = 'var(--yellow)';
-      loadDemo();
-    };
-  } catch { loadDemo(); }
+    es.onerror = () => { document.getElementById('dot').style.background = 'var(--yellow)'; demo(); };
+  } catch { demo(); }
 }
 
-function loadDemo() {
+function demo() {
+  const t1 = uid(), t2 = uid(), t3 = uid(), t4 = uid();
   [
-    { text: 'The turn chain needs Merkle anchoring before we can claim trustless verification.', actor: 'human:ben', stream: 'telegram', timestamp: new Date().toISOString() },
-    { text: 'compute_anchor() is a pure function. Same chain = same root, always. No IO.', actor: 'claude-sonnet-4-6', stream: 'telegram', timestamp: new Date().toISOString() },
-    { text: 'The sieve must be a pure function. No LLM calls in the promotion path.', actor: 'human:ben', stream: 'claude-code', timestamp: new Date().toISOString() },
-    { text: 'Wiring graph-lab BFS relevance into promote() — replacing keyword matching.', actor: 'claude-sonnet-4-6', stream: 'claude-code', timestamp: new Date().toISOString() },
+    { id:t1, text:'The turn chain needs Merkle anchoring before we can claim trustless verification.', actor:'human:ben', stream:'telegram', timestamp:new Date().toISOString() },
+    { id:t2, text:'compute_anchor() is a pure function. Same chain = same root, always. No IO.', actor:'claude-sonnet-4-6', stream:'telegram', timestamp:new Date().toISOString() },
+    { id:t3, text:'The sieve must be a pure function. No LLM calls in the promotion path.', actor:'human:ben', stream:'claude-code', timestamp:new Date().toISOString() },
+    { id:t4, text:'Wiring graph-lab BFS relevance into promote() — replacing keyword matching with graph traversal.', actor:'claude-sonnet-4-6', stream:'claude-code', timestamp:new Date().toISOString() },
   ].forEach(ingestTurn);
   [
-    { text: 'Merkle anchoring is required before trustless verification', claim_type: 'constraint', confidence: 0.95, source: 'human:ben', stream: 'telegram' },
-    { text: 'compute_anchor() is a pure function: same chain = same root', claim_type: 'guarantee', confidence: 0.95, source: 'claude-sonnet-4-6', stream: 'telegram' },
-    { text: 'The sieve must contain no LLM calls in the promotion path', claim_type: 'constraint', confidence: 0.98, source: 'human:ben', stream: 'claude-code' },
-    { text: 'Graph-lab BFS relevance replaces keyword matching in promote()', claim_type: 'fact', confidence: 0.9, source: 'claude-sonnet-4-6', stream: 'claude-code' },
+    { turn_id:t1, text:'Merkle anchoring is required before trustless verification is possible', claim_type:'constraint', confidence:0.95, source:'human:ben', stream:'telegram' },
+    { turn_id:t2, text:'compute_anchor() is a pure function: same chain = same root, always', claim_type:'guarantee', confidence:0.95, source:'sonnet', stream:'telegram' },
+    { turn_id:t3, text:'The sieve must contain no LLM calls in the promotion path', claim_type:'constraint', confidence:0.98, source:'human:ben', stream:'claude-code' },
+    { turn_id:t4, text:'Graph-lab BFS relevance replaces keyword matching in promote()', claim_type:'fact', confidence:0.9, source:'sonnet', stream:'claude-code' },
   ].forEach(ingestClaim);
   render();
 }
 
-connectSSE();
+connect();
 </script>
 </body>
 </html>
