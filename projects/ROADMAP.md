@@ -5,6 +5,59 @@
 
 ---
 
+## ⚠️ PROTECTION PLAN (top priority, non-negotiable)
+
+**The situation:** Ben is building something that could be genuinely valuable at scale.
+He is not a businessman. He needs protection before it matters, not after.
+
+**The three things that protect you:**
+
+**1. Public timestamp — do it now, costs nothing**
+Commit everything to a public GitHub repo today. Not the full product — just the core:
+- The mother type definitions
+- The turn chain spec
+- The lens-scoped spec card format
+- The Wrangler Pattern description
+
+Public git history is a timestamped prior art record. If anyone later claims they invented
+this, you have cryptographic proof of when you had it. This is the minimum viable protection.
+
+**2. Provisional patent — costs ~$150-300, buys 12 months**
+File a provisional patent application with the USPTO for:
+- The turn chain + Merkle anchoring system
+- The lens-scoped run-spec card format
+- The sieve with provenance gate
+
+A provisional gives you 12 months of "patent pending" status while you figure out
+whether it's worth the $10k+ for a full application. You don't need a lawyer for provisional.
+USPTO has a pro se (self-represented) pathway.
+
+**3. Keep the substrate open, sell the service**
+MIT license the substrate (sieve, turn chain, type system).
+Sell the hosted service, the compliance reports, the certified audit trails.
+This is the Red Hat model: the code is free, the certification is paid.
+Open source is actually the best protection against being copied —
+you get credit, community, and network effects while competitors have to build from scratch.
+
+**What NOT to do:**
+- Don't wait until you have users to think about this
+- Don't try to keep it secret (you can't, and secrecy kills community)
+- Don't spend money on a full patent before you have evidence anyone wants it
+
+**Timeline:**
+- This week: public GitHub repo with timestamped prior art
+- Next 30 days: provisional patent filing (can do yourself)
+- After first paying customer: evaluate full patent
+
+**The honest truth:**
+The receipts and the turn chain are the most defensible things you have.
+They're non-obvious (courts care about this) and they solve a specific problem
+nobody else is solving this way. That's patentable.
+The type system (mother types) is likely not patentable — it's a taxonomy.
+But it IS copyrightable as original expression, and it IS citable as prior art.
+
+---
+
 ## WHERE WE ARE
 
 ### The Pre-Substrate Attempt (Feb 2026)
@@ -400,8 +453,9 @@ Discovered 2026-04-09. The Mac Mini instance isn't just a wild proof environment
 - Revenue motive keeps it honest
 - Origin story for the product
 
-**Status:** DESIGNED, NOT STARTED
-**Dependencies:** Type system MVP (Phase 2) + Mac Mini substrate seeding
+**Status:** REDESIGNED 2026-04-11
+**Hardware change:** Mac Mini → return. MacBook Air 13" → public/founder machine. MacBook Pro (48GB RAM) → home, virgin account, wild proof environment.
+**Dependencies:** Type system MVP (Phase 2) + MBP virgin account seeding
 
 ---
 
@@ -450,6 +504,30 @@ intent.py (local, free)
 **Pricing:**
 - Free: local receipts + git anchor
 - Paid: ZK proof on L2, public verifiable URL, ~$5-20/month
+
+---
+
+## THE MOTHER TYPE SYSTEM
+
+Discovered 2026-04-10 (Friday night).
+
+The verticals (legal, biotech/organoids, evolutionary biology, music theory, epidemiology) are not separate products. They are ore.
+
+Each vertical is a knowledge system with:
+- Typed state machine structure
+- Human-ratified outputs over long timeframes
+- Independently verifiable ground truth
+- Load-bearing signals that survived repeated compression across many observers
+
+Run the sieve across all of them independently. What promotes across ALL of them without contamination = the mother type system. Not designed top-down. Extracted bottom-up from convergence.
+
+The mother is what you sell to everyone. The verticals are how you get the data to find it.
+
+Ben is already in rooms in these verticals (law firm, organoids). Each conversation is ore. Each domain's ratified outputs are calibration data for the sieve's Bayesian prior.
+
+**The calibration corpus:** what's structurally load-bearing in legal precedent AND evolutionary biology AND music theory AND epidemiology — that intersection is the domain-agnostic signal about what makes a claim load-bearing. That's the prior.
+
+**Status:** DESIGNED, NOT BUILT. Needs the type system MVP first.
 
 ---
 
