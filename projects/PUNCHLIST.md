@@ -54,6 +54,12 @@
 - [ ] **critics.py → substrate wire** — multi-model spine with receipts
 - [ ] **Turn configs + persona variables** — Liberating Structures as JSON configs
 - [ ] **Rhetorical sieve** — detect when delivery diverges from content (epistemic hacking defense)
+  - Positive sentiment wrapping a CONSTRAINT = flag
+  - Consolation after LOSS = flag  
+  - High confidence on UNCERTAINTY = flag
+  - Sycophancy: human's framing adopted without evidence = flag
+  - Output: `rhetorical_mismatch: true` on the claim, visible in the cockpit nugget
+  - The declared loss of rhetorical sieve = what the delivery was trying to make you feel
 - [ ] **Reverse-cast algorithm inference** — type Instagram meme feed → infer algorithm shape
 - [ ] **Audio corpus runs** — voice/ambient as typed sediment
 
