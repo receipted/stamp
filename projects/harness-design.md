@@ -167,6 +167,22 @@ def estimate_run_cost(
 
 ---
 
+## Confirmed Design Decisions (2026-04-12)
+
+**Matrix:** Model × Tier AND Model × Persona — both axes.
+- Model × Tier: cost/capability tradeoff (which model, which pricing tier)
+- Model × Persona: epistemic role (what the model is trying to do)
+- A single model can be assigned any persona regardless of tier
+
+**Staging object format:** JSON seed spec card — adapted per model.
+- Base spec card defines the topic, constraints, and what to find
+- Each model gets a version adapted to its idiom (not rewritten, adapted)
+- The spec card is the CONTRACT for the run — what each model is asked to do
+- Output of each model run is typed claims against that contract
+- The spec card hash is part of the receipt — proves what each model was asked
+
+---
+
 ## Open Questions (TBD)
 
 - Staging object format: JSON seed spec vs free-form prompt adapted per model?
