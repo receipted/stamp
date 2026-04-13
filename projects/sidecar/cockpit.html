@@ -311,14 +311,22 @@ function toggleTurn(id) {
 
 // ── NAVIGATION: nugget → sediment ──
 function goSediment(turnId) {
+  if (!turnId) return;
   tab('sediment');
-  setTimeout(() => {
-    const el = document.getElementById('turn-'+turnId);
-    if (!el) return;
-    el.classList.add('highlighted', 'open');
-    el.scrollIntoView({behavior:'smooth', block:'center'});
-    setTimeout(() => el.classList.remove('highlighted'), 3000);
-  }, 80);
+  let attempts = 0;
+  const tryFind = () => {
+    const el = document.getElementById('item-'+turnId);
+    if (el) {
+      el.classList.add('highlighted', 'open');
+      const body = el.querySelector('.turn-body');
+      if (body) body.classList.add('open');
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+      setTimeout(() => el.classList.remove('highlighted'), 3000);
+    } else if (attempts++ < 8) {
+      setTimeout(tryFind, 150);
+    }
+  };
+  setTimeout(tryFind, 100);
 }
 
 // ── HELPERS ──

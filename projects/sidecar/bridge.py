@@ -23,7 +23,7 @@ import os
 import sys
 import time
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 PORT = 7788
@@ -54,6 +54,17 @@ def extract_turns_from_session(session_path):
     """Extract turns from an OpenClaw JSONL session file."""
     turns = []
     current_model = "unknown"
+
+    # Determine stream label from path
+    if "shadow" in session_path and "openclaw" in session_path:
+        stream = "telegram"  # Shadow account = Telegram session
+    elif ".claude" in session_path:
+        stream = "claude-code"
+    elif ".codex" in session_path:
+        stream = "codex"
+    else:
+        stream = "api"
+
     with open(session_path) as f:
         for line in f:
             line = line.strip()
@@ -82,12 +93,13 @@ def extract_turns_from_session(session_path):
             content = str(content).strip()
             if len(content) < 10:
                 continue
+            turn_id = obj.get("id", f"t-{len(turns)}")
             turns.append({
                 "type": "turn",
-                "id": obj.get("id", f"t-{len(turns)}"),
+                "id": turn_id,
                 "text": content[:2000],
                 "actor": current_model if role == "assistant" else "human:ben",
-                "stream": "shadow-session" if "shadow" in session_path else "claude-code",
+                "stream": stream,
                 "timestamp": obj.get("timestamp", ""),
             })
     return turns
@@ -130,6 +142,8 @@ def sieve_turns(turns, promote_fn):
 
     events = []
     for c in promoted:
+        # turn_id in the claim = the id field from the original turn object
+        # The claim's 'id' field was set from the turn's id in claims_input
         events.append({
             "type": "claim",
             "id": c.get("id", ""),
@@ -138,7 +152,7 @@ def sieve_turns(turns, promote_fn):
             "confidence": c.get("confidence", 0.8),
             "source": c.get("source", ""),
             "stream": c.get("stream", ""),
-            "turn_id": c.get("turn_id", ""),
+            "turn_id": c.get("id", ""),  # claim id = turn id (set in claims_input below)
             "timestamp": c.get("timestamp", ""),
         })
     return events
@@ -163,55 +177,63 @@ def watcher_loop(promote_fn):
     """Watch ore directory for new session files and process them."""
     known_mtimes = {}
 
+    # Session file paths to watch directly
+    WATCH_SESSION_PATHS = [
+        "/Users/shadow/.openclaw/agents/main/sessions",
+    ]
+    # Also watch Codex and Claude Code session directories
+    EXTRA_PATHS = [
+        "/Users/benjaminfenton/.claude/projects",
+        "/Users/benjaminfenton/.codex/sessions",
+    ]
+
+    print("  Watcher loop starting...")
     while True:
         try:
-            # Scan for session JSONL files
-            for root, dirs, files in os.walk(ORE_DIR):
-                for fname in files:
-                    if not fname.endswith(".jsonl"):
-                        continue
-                    fpath = os.path.join(root, fname)
+            all_session_paths = []
+
+            # Shadow OpenClaw sessions
+            for session_dir in WATCH_SESSION_PATHS:
+                p = Path(session_dir)
+                if p.exists():
+                    all_session_paths.extend(p.glob("*.jsonl"))
+
+            # Extra session dirs
+            for extra_dir in EXTRA_PATHS:
+                p = Path(extra_dir)
+                if p.exists():
+                    for sub in p.rglob("*.jsonl"):
+                        all_session_paths.append(sub)
+
+            for session_path in all_session_paths:
+                fpath = str(session_path)
+                try:
                     mtime = os.path.getmtime(fpath)
-                    if known_mtimes.get(fpath) == mtime:
+                except OSError:
+                    continue
+                if known_mtimes.get(fpath) == mtime:
+                    continue
+                known_mtimes[fpath] = mtime
+
+                try:
+                    turns = extract_turns_from_session(fpath)
+                    if not turns:
                         continue
-                    known_mtimes[fpath] = mtime
+                    print(f"  {session_path.name}: {len(turns)} turns extracted")
 
-                    # Process new/updated session file
-                    try:
-                        turns = extract_turns_from_session(fpath)
-                        if not turns:
-                            continue
+                    # Broadcast last 5 turns
+                    for t in turns[-5:]:
+                        broadcast(t)
 
-                        # Broadcast raw turns
-                        for t in turns[-5:]:  # Last 5 new turns
-                            broadcast(t)
+                    # Sieve and broadcast claims
+                    claim_events = sieve_turns(turns, promote_fn)
+                    for ce in claim_events:
+                        broadcast(ce)
+                    if claim_events:
+                        print(f"  → {len(claim_events)} claims broadcast")
 
-                        # Sieve and broadcast claims
-                        claim_events = sieve_turns(turns, promote_fn)
-                        for ce in claim_events:
-                            broadcast(ce)
-
-                    except Exception as e:
-                        print(f"  Error processing {fname}: {e}")
-
-            # Also check shadow session files directly
-            shadow_sessions = Path("/Users/shadow/.openclaw/agents/main/sessions")
-            if shadow_sessions.exists():
-                for f in shadow_sessions.glob("*.jsonl"):
-                    fpath = str(f)
-                    mtime = os.path.getmtime(fpath)
-                    if known_mtimes.get(fpath) == mtime:
-                        continue
-                    known_mtimes[fpath] = mtime
-                    try:
-                        turns = extract_turns_from_session(fpath)
-                        for t in turns[-3:]:
-                            broadcast(t)
-                        claims = sieve_turns(turns, promote_fn)
-                        for c in claims:
-                            broadcast(c)
-                    except Exception as e:
-                        print(f"  Error processing shadow session: {e}")
+                except Exception as e:
+                    print(f"  Error: {session_path.name}: {e}")
 
         except Exception as e:
             print(f"Watcher error: {e}")
@@ -279,9 +301,9 @@ def main():
     print(f"  Ore dir:  {ORE_DIR}")
 
     # Load sieve
-    print("  Loading sieve...", end=" ", flush=True)
+    print("  Loading sieve...")
     promote_fn = setup_sieve()
-    print("ok")
+    print("  Sieve loaded ok")
 
     # Start watcher in background
     watcher = threading.Thread(target=watcher_loop, args=(promote_fn,), daemon=True)
@@ -289,7 +311,7 @@ def main():
     print("  Watcher started")
 
     # Start HTTP server
-    server = HTTPServer(("localhost", port), Handler)
+    server = ThreadingHTTPServer(("localhost", port), Handler)
     print(f"  Listening on port {port}")
     print()
     try:
