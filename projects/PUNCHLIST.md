@@ -1,93 +1,67 @@
 # Punchlist — Rolling
+# Last updated: 2026-04-13
 
 **North star:** Feed code in. Intent map out. No LLM. Ship it.
 
 ---
 
-## NOW (this week)
-
-- [x] **1. AST parser for Python functions** — `parse_function_to_claims()` in kernel.py
-- [x] **2. Wire into sieve harness** — `parse_function_to_graph()` + graph-lab BFS + type-lab inference
-- [x] **3. CLI entry point** — `intent.py` runs, produces receipts
-- [x] **4. Purity signals** — ✓ pure / ⚠️ IMPURE / ⚠️ UNVERIFIED
-- [x] **5. Test on stranger's code** — httpx/_urls.py. PASSED. Gate open.
-
-- [ ] **1. AST parser for Python functions**
-  - Input: a `.py` file
-  - Output: list of claim objects (one per function)
-  - Each claim: `{text: signature + docstring + body summary, claim_type: inferred}`
-  - Pure Python, stdlib `ast` module only
-  - Test: run on `kernel.py`, get 20+ claim objects
-
-- [ ] **2. Wire AST parser into sieve harness**
-  - Replace manual claim construction with AST output
-  - Run sieve over all of `kernel.py`
-  - Output: intent map per function, receipted
-  - Test: `classify_claim_role` intent object matches what we just produced manually
-
-- [ ] **3. CLI entry point**
-  - `python intent.py ./src/surface/kernel.py`
-  - Outputs intent map to stdout (human readable) + receipt to file
-  - Test: run it, read it, does it make sense to someone who didn't write the code?
+## ⚠️ PROTECTION FIRST (before anything else)
+- [ ] **Public GitHub repo** — timestamp prior art. This week. Free. Non-negotiable.
+- [ ] **Provisional patent** — $150-300, do it yourself, 30 days. Covers turn chain + lens-scoped run-spec + provenance gate.
 
 ---
 
-## NEXT (next week)
-
-- [ ] **4. Wrap in a git hook**
-  - Pre-commit: run intent.py on changed files
-  - Appends intent receipts to `.git/receipts/`
-  - Test: make a commit, receipt appears
-
-- [ ] **5. README + GitHub repo**
-  - One repo: `intent` or `ore-to-lore` (name TBD)
-  - README: problem in 2 sentences, install in 1 command, demo output
-  - MIT license
-
-- [ ] **6. Run on a real legacy codebase**
-  - Pick something you didn't write
-  - Does the intent map help you understand it faster?
-  - That's the demo
+## DONE (this week)
+- [x] AST parser `parse_function_to_claims()` + `parse_function_to_graph()` in kernel.py
+- [x] `intent.py` CLI — runs on any .py file, produces receipts
+- [x] Purity signals (✓ pure / ⚠️ IMPURE / ⚠️ UNVERIFIED)
+- [x] Tested on httpx/_urls.py — gate open
+- [x] Epistemic tagger wired into sieve as pre-pass (inlined patterns, no injection vector)
+- [x] Provenance gate in promote() — untrusted sources blocked
+- [x] `guarantee` type — first new type from evidence
+- [x] `_CLAIM_DIMENSIONS` semantic dimension map
+- [x] Complementarity rule — different dimensions, same fn = not contested
+- [x] 23 substrate tests — all green
+- [x] `turn_chain.py` — hash-chain individual conversation turns with model attribution
+- [x] `anchor.py` — Merkle anchoring to git (free tier)
+- [x] Session anchored: 1,547 turns, Merkle root `4c690b5e...`, git commit `cf2f76e8...`
+- [x] `harness.py` — multi-model harness with lens-scoped spec cards, cost estimator
+- [x] `bridge.py` — SSE server feeding real sieve output into cockpit
+- [x] `cockpit.html` — two-tab UI (Nuggets/Sediment), drill-down navigation
+- [x] `audio_claim.py` — typed claims from audio signal (librosa)
+- [x] 15 corpus runs — mother types confirmed across all domains
+- [x] Formal type definitions with reasoning (mother-type-definitions.md)
+- [x] Codebase cleanup — screenshots/txt/UI apps moved to _legacy/
+- [x] `harness-design.md` — parallel vs sequential, defensibility layer
 
 ---
 
-## SURFACE INTEGRATION (cross-model substrate loop)
+## NOW (immediate)
 
-- [ ] **Wire critics.py → substrate pipeline**
-  - critics.py sends topic to multiple models in parallel
-  - Responses route through record.py → claims.py → sieve.py
-  - Output: receipted spine from multi-model review
-  - This IS the multi-model substrate loop
-  - Minimal harness: takes a topic, returns a receipted spine
+- [ ] **Run bridge.py** — test with live session data, see cockpit update in real time
+- [ ] **UX design session** — cockpit redesign (you drive, I implement)
+  - Round-robin prompt patterns as a new creative form
+  - Conversational UX extension, not a scary matrix
+  - Thinking environment, not dashboard
+- [ ] **Requirements vs implementation test** — run sieve on spec claims vs code AST claims, compare spines
+- [ ] **Git hook** — pre-commit runs intent.py on changed files, appends receipts
 
-- [ ] **Merkle anchoring layer on turn_chain.py**
-  - Batch day's turn receipts into Merkle tree
-  - Compute root hash
-  - Free tier: write root to file (git anchor)
-  - Paid tier: submit to L2 chain
-  - ~30 lines on top of existing ledger.py
-  - Bridge between local turn chain and trustless verification
+---
 
-- [ ] **Turn configs + persona variables**
-  - JSON config format for turn sequences (Liberating Structures protocols)
-  - Actor personas with epistemic bias (adversarial/builder/implementer/ratifier)
-  - Role-swapping: run same session with swapped personas, compare spines
-  - What's invariant across persona configurations = structurally real
+## NEXT
+
+- [ ] **README + GitHub** — after protection plan. Rust first repo or Python. TBD.
+- [ ] **critics.py → substrate wire** — multi-model spine with receipts
+- [ ] **Turn configs + persona variables** — Liberating Structures as JSON configs
+- [ ] **Rhetorical sieve** — detect when delivery diverges from content (epistemic hacking defense)
+- [ ] **Reverse-cast algorithm inference** — type Instagram meme feed → infer algorithm shape
+- [ ] **Audio corpus runs** — voice/ambient as typed sediment
 
 ---
 
 ## AFTER TRACTION
 
-- [ ] Rust port of the AST parser + sieve kernel
-- [ ] WASM compilation
+- [ ] Rust port → WASM → ZK circuit → on-chain verifier
 - [ ] Repo crawler (enterprise tier)
-- [ ] Mac Mini career ops deployment
-
----
-
-## DONE
-- [x] Watcher capturing ore from genesis + codex + claude code sessions
-- [x] Ledger hash chain + Merkle tree
-- [x] Sieve running on real ore with graph relevance
-- [x] Seed spec written
-- [x] Intent extraction test passed on `classify_claim_role`
+- [ ] Mac Mini / MBP virgin account career ops platform
+- [ ] Tablets (HD-Rosetta nickel + 5D quartz editions)
