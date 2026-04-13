@@ -198,6 +198,34 @@ lens_weights = {
 
 ---
 
+## Defensibility Layer
+
+The run-spec card + receipt chain makes AI outputs defensible in both directions.
+
+**What the receipt chain proves:**
+- The exact prompt asked (hashed, immutable)
+- The lens active during the run (epistemic filter, bias direction)
+- The output produced (typed claims, receipted)
+- The sieve verdict (what was structurally load-bearing given that lens)
+
+**Attribution:**
+- Output biased toward CONSTRAINT? Check the lens — was it adversarial?
+- Output primed toward a specific conclusion? Check the staging card constraints
+- Model produced harmful output despite neutral lens? Model bears that attribution
+- User's prompt constructed to elicit a specific answer? Run-spec card proves it
+
+**Legal utility:**
+- "I asked a neutral question" → run-spec card proves the lens was neutral or not
+- "The model was biased" → receipt proves what lens was active
+- Regulatory audit: 1000 run receipts → distribution of outputs by lens type → systematic bias detection
+
+**This doesn't exist anywhere right now.**
+Current state: model produces output, no way to trace whether the output was caused
+by training, prompt construction, lens choice, or combination.
+The run-spec card closes that gap.
+
+---
+
 ## Open Questions (TBD)
 
 - Staging object format: JSON seed spec vs free-form prompt adapted per model?
