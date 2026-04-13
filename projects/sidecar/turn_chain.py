@@ -169,6 +169,42 @@ def build_chain(turns: list[dict]) -> list[dict]:
     return chain
 
 
+def merkle_root(hashes: list[str]) -> str:
+    """Pure function. Compute Merkle root over a list of hex hashes.
+    Same hashes → same root. Always. No IO.
+    """
+    import hashlib
+    if not hashes:
+        return h(b"empty")
+    layer = [bytes.fromhex(x) for x in hashes]
+    while len(layer) > 1:
+        if len(layer) % 2 == 1:
+            layer.append(layer[-1])
+        layer = [
+            hashlib.sha256(layer[i] + layer[i + 1]).digest()
+            for i in range(0, len(layer), 2)
+        ]
+    return layer[0].hex()
+
+
+def compute_anchor(chain: list[dict]) -> dict:
+    """Pure function. Compute Merkle root over all turn receipts.
+    Same chain → same anchor. Always. No IO.
+
+    Returns anchor dict suitable for git commit message or on-chain submission.
+    """
+    receipt_hashes = [r["receipt_hash"] for r in chain if "receipt_hash" in r]
+    root = merkle_root(receipt_hashes)
+    return {
+        "schema": "sidecar.anchor.v1",
+        "merkle_root": root,
+        "turn_count": len(chain),
+        "receipt_count": len(receipt_hashes),
+        "first_turn_hash": chain[0]["receipt_hash"] if chain else "",
+        "last_turn_hash": chain[-1]["receipt_hash"] if chain else "",
+    }
+
+
 def verify_chain(chain: list[dict]) -> tuple[bool, list[str]]:
     """
     Pure function. Verify every link in the chain.
