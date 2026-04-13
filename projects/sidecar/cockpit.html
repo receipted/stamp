@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cockpit</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --card: #1c2128;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --text3: #6e7681;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+      --orange: #ffa657;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      padding: 10px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 13px; font-weight: 600; color: var(--text2); letter-spacing: 0.05em; text-transform: uppercase; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Three sections */
+    .sections {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      background: var(--bg);
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* Section header with tabs */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      padding: 0 8px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px 10px 8px 4px;
+      color: var(--text3);
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
+      margin-right: 4px;
+      min-width: 90px;
+    }
+
+    .section-label.sediment { color: var(--text3); }
+    .section-label.sieved   { color: var(--accent); }
+    .section-label.nuggets  { color: var(--green); }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .tab {
+      padding: 6px 10px;
+      font-size: 11px;
+      color: var(--text3);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.1s;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab.source-telegram { }
+    .tab.source-claude-code { }
+    .tab.source-codex { }
+    .tab.source-api { }
+
+    /* Content area */
+    .section-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      min-height: 0;
+    }
+
+    /* Turn items */
+    .turn {
+      margin-bottom: 6px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .turn-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--card);
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .turn-header:hover { background: #21262d; }
+
+    .turn-actor {
+      font-weight: 600;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .actor-human { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .actor-claude { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .actor-sonnet { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .actor-opus { background: rgba(255,166,87,0.15); color: var(--orange); }
+    .actor-codex { background: rgba(63,185,80,0.15); color: var(--green); }
+    .actor-system { background: rgba(110,118,129,0.15); color: var(--text3); }
+
+    .turn-time { color: var(--text3); font-size: 10px; margin-left: auto; }
+
+    .attention-flag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .flag-attention { background: rgba(248,81,73,0.2); color: var(--red); }
+    .flag-promoted  { background: rgba(63,185,80,0.15); color: var(--green); }
+    .flag-contested { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .flag-loss      { background: rgba(110,118,129,0.1); color: var(--text3); }
+
+    .turn-body {
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text2);
+      background: var(--bg);
+      display: none;
+      border-top: 1px solid var(--border);
+    }
+    .turn-body.expanded { display: block; }
+
+    .turn-preview {
+      flex: 1;
+      color: var(--text2);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Claim items in sieve section */
+    .claim {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 5px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      background: var(--card);
+      font-size: 11px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: border-color 0.1s;
+    }
+    .claim:hover { border-color: var(--border); }
+
+    .claim-type {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .type-contract    { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .type-constraint  { background: rgba(248,81,73,0.15); color: var(--red); }
+    .type-uncertainty { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .type-relation    { background: rgba(63,185,80,0.15); color: var(--green); }
+    .type-witness     { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .type-contested   { background: rgba(255,166,87,0.15); color: var(--orange); }
+    .type-loss        { background: rgba(110,118,129,0.1); color: var(--text3); }
+    .type-guarantee   { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+    .claim-text { color: var(--text); flex: 1; line-height: 1.4; }
+    .claim-source { color: var(--text3); font-size: 9px; white-space: nowrap; }
+
+    /* Nugget items */
+    .nugget {
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .nugget:hover { border-color: var(--accent); }
+    .nugget.needs-attention { border-color: var(--red); background: rgba(248,81,73,0.05); }
+
+    .nugget-flag {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .nugget-text { color: var(--text); line-height: 1.5; }
+    .nugget-anchor { color: var(--text3); font-size: 10px; margin-top: 4px; }
+    .nugget-anchor a { color: var(--accent); text-decoration: none; }
+    .nugget-anchor a:hover { text-decoration: underline; }
+
+    /* Empty state */
+    .empty {
+      color: var(--text3);
+      font-size: 11px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="header-title">Cockpit</div>
+  <div style="color: var(--text3); font-size: 11px; margin-left: auto;" id="turnCount">0 turns</div>
+</div>
+
+<div class="sections">
+
+  <!-- SECTION 1: SEDIMENT -->
+  <div class="section" id="section-sediment">
+    <div class="section-header">
+      <div class="section-label sediment">Sediment</div>
+      <div class="tabs" id="tabs-sediment"></div>
+    </div>
+    <div class="section-content" id="content-sediment">
+      <div class="empty">Waiting for streams...</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: SIEVED ORE -->
+  <div class="section" id="section-sieved">
+    <div class="section-header">
+      <div class="section-label sieved">Sieved Ore</div>
+      <div class="tabs" id="tabs-sieved"></div>
+    </div>
+    <div class="section-content" id="content-sieved">
+      <div class="empty">Sieve output will appear here...</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: NUGGETS -->
+  <div class="section" id="section-nuggets">
+    <div class="section-header">
+      <div class="section-label nuggets">Nuggets</div>
+      <div class="tabs" id="tabs-nuggets"></div>
+    </div>
+    <div class="section-content" id="content-nuggets">
+      <div class="empty">High-value nuggets will surface here...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+
+const SOURCES = ['All', 'Telegram', 'Claude Code', 'Codex', 'API'];
+const SOURCE_IDS = ['all', 'telegram', 'claude-code', 'codex', 'api'];
+
+let activeTab = 'all';
+let turns = [];        // raw sediment turns
+let claims = [];       // sieved claims
+let nuggets = [];      // attention-flagged nuggets
+let turnCount = 0;
+
+// ============================================================
+// TABS
+// ============================================================
+
+function renderTabs(containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  SOURCES.forEach((src, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab source-' + SOURCE_IDS[i] + (activeTab === SOURCE_IDS[i] ? ' active' : '');
+    tab.textContent = src;
+    tab.onclick = () => setTab(SOURCE_IDS[i]);
+    container.appendChild(tab);
+  });
+}
+
+function setTab(tabId) {
+  activeTab = tabId;
+  ['tabs-sediment', 'tabs-sieved', 'tabs-nuggets'].forEach(renderTabs);
+  renderAll();
+}
+
+function initTabs() {
+  ['tabs-sediment', 'tabs-sieved', 'tabs-nuggets'].forEach(renderTabs);
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+function actorClass(actor) {
+  if (!actor) return 'actor-system';
+  const a = actor.toLowerCase();
+  if (a.includes('human')) return 'actor-human';
+  if (a.includes('opus')) return 'actor-opus';
+  if (a.includes('sonnet') || a.includes('claude')) return 'actor-sonnet';
+  if (a.includes('codex')) return 'actor-codex';
+  return 'actor-system';
+}
+
+function actorShort(actor) {
+  if (!actor) return 'system';
+  const parts = actor.split(':');
+  return parts[parts.length - 1].split('-')[0];
+}
+
+function claimTypeClass(type) {
+  const map = {
+    'fact': 'type-contract',
+    'constraint': 'type-constraint',
+    'hypothesis': 'type-uncertainty',
+    'observation': 'type-relation',
+    'guarantee': 'type-witness',
+    'contested': 'type-contested',
+    'loss': 'type-loss',
+  };
+  return map[type] || 'type-relation';
+}
+
+function claimTypeLabel(type) {
+  const map = {
+    'fact': 'CONTRACT',
+    'constraint': 'CONSTRAINT',
+    'hypothesis': 'UNCERTAINTY',
+    'observation': 'RELATION',
+    'guarantee': 'WITNESS',
+    'contested': 'CONTESTED',
+    'loss': 'LOSS',
+  };
+  return map[type] || type.toUpperCase();
+}
+
+function filterBySource(items, sourceKey) {
+  if (activeTab === 'all') return items;
+  return items.filter(item => {
+    const src = (item.source || item.stream || '').toLowerCase();
+    return src.includes(activeTab.replace('-', ''));
+  });
+}
+
+function renderSediment() {
+  const container = document.getElementById('content-sediment');
+  const filtered = filterBySource(turns, activeTab);
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty">Waiting for streams...</div>';
+    return;
+  }
+  container.innerHTML = '';
+  [...filtered].reverse().forEach((turn, i) => {
+    const div = document.createElement('div');
+    div.className = 'turn';
+    div.id = 'turn-' + turn.id;
+
+    const preview = (turn.text || '').slice(0, 80) + (turn.text && turn.text.length > 80 ? '...' : '');
+    const time = turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString() : '';
+
+    div.innerHTML = `
+      <div class="turn-header" onclick="toggleTurn('${turn.id}')">
+        <span class="turn-actor ${actorClass(turn.actor)}">${actorShort(turn.actor)}</span>
+        <span class="turn-preview">${escHtml(preview)}</span>
+        <span class="turn-time">${time}</span>
+      </div>
+      <div class="turn-body" id="body-${turn.id}">
+        ${escHtml(turn.text || '')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderSieved() {
+  const container = document.getElementById('content-sieved');
+  const filtered = filterBySource(claims, activeTab);
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty">Sieve output will appear here...</div>';
+    return;
+  }
+  container.innerHTML = '';
+  [...filtered].reverse().forEach(claim => {
+    const div = document.createElement('div');
+    div.className = 'claim';
+    div.id = 'claim-' + claim.id;
+    const typeClass = claimTypeClass(claim.claim_type);
+    const typeLabel = claimTypeLabel(claim.claim_type);
+    const src = claim.source || claim.model || '';
+    div.innerHTML = `
+      <span class="claim-type ${typeClass}">${typeLabel}</span>
+      <span class="claim-text">${escHtml(claim.text || '')}</span>
+      <span class="claim-source">${escHtml(src)}</span>
+    `;
+    div.onclick = () => scrollToTurn(claim.turn_id);
+    container.appendChild(div);
+  });
+}
+
+function renderNuggets() {
+  const container = document.getElementById('content-nuggets');
+  const filtered = filterBySource(nuggets, activeTab);
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty">High-value nuggets will surface here...</div>';
+    return;
+  }
+  container.innerHTML = '';
+  [...filtered].reverse().forEach(nugget => {
+    const div = document.createElement('div');
+    div.className = 'nugget' + (nugget.needs_attention ? ' needs-attention' : '');
+    div.id = 'nugget-' + nugget.id;
+
+    const flagHtml = nugget.needs_attention
+      ? '<div class="nugget-flag" style="color:var(--red)">⚡ NEEDS ATTENTION</div>'
+      : nugget.is_contested
+        ? '<div class="nugget-flag" style="color:var(--yellow)">🔄 CONTESTED</div>'
+        : '<div class="nugget-flag" style="color:var(--green)">✓ PROMOTED</div>';
+
+    div.innerHTML = `
+      ${flagHtml}
+      <div class="nugget-text">${escHtml(nugget.text || '')}</div>
+      <div class="nugget-anchor">
+        ${nugget.claim_id ? `<a href="#claim-${nugget.claim_id}" onclick="scrollToClaim('${nugget.claim_id}')">→ sieved</a>` : ''}
+        ${nugget.turn_id ? `<a href="#turn-${nugget.turn_id}" onclick="scrollToTurn('${nugget.turn_id}')" style="margin-left:8px">→ source</a>` : ''}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderAll() {
+  renderSediment();
+  renderSieved();
+  renderNuggets();
+}
+
+// ============================================================
+// INTERACTIONS
+// ============================================================
+
+function toggleTurn(id) {
+  const body = document.getElementById('body-' + id);
+  if (body) body.classList.toggle('expanded');
+}
+
+function scrollToTurn(turnId) {
+  if (!turnId) return;
+  setTab('all');
+  setTimeout(() => {
+    const el = document.getElementById('turn-' + turnId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const body = el.querySelector('.turn-body');
+      if (body) body.classList.add('expanded');
+      el.style.borderColor = 'var(--accent)';
+      setTimeout(() => { el.style.borderColor = ''; }, 2000);
+    }
+  }, 100);
+}
+
+function scrollToClaim(claimId) {
+  if (!claimId) return;
+  const el = document.getElementById('claim-' + claimId);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.borderColor = 'var(--accent)';
+    setTimeout(() => { el.style.borderColor = ''; }, 2000);
+  }
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ============================================================
+// DATA INGESTION
+// Feed turns/claims/nuggets from the sidecar daemon
+// or from a local JSON file for testing
+// ============================================================
+
+function ingestTurn(turn) {
+  turn.id = turn.id || 'turn-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  turns.push(turn);
+  turnCount++;
+  document.getElementById('turnCount').textContent = turnCount + ' turns';
+}
+
+function ingestClaim(claim) {
+  claim.id = claim.id || 'claim-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  claims.push(claim);
+
+  // Auto-generate nugget for promoted claims
+  const needsAttention = claim.claim_type === 'constraint' && claim.confidence > 0.85;
+  nuggets.push({
+    id: 'nugget-' + claim.id,
+    text: claim.text,
+    claim_id: claim.id,
+    turn_id: claim.turn_id,
+    source: claim.source,
+    stream: claim.stream,
+    needs_attention: needsAttention,
+    is_contested: claim.claim_type === 'hypothesis' && claim.contested,
+  });
+}
+
+// ============================================================
+// SSE CONNECTION
+// Connect to local sidecar server when running
+// Falls back to demo data in standalone mode
+// ============================================================
+
+function connectSSE() {
+  const url = 'http://localhost:7788/stream';
+  try {
+    const es = new EventSource(url);
+    es.onopen = () => {
+      document.getElementById('statusDot').style.background = 'var(--green)';
+    };
+    es.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'turn') ingestTurn(data);
+        else if (data.type === 'claim') ingestClaim(data);
+        renderAll();
+      } catch {}
+    };
+    es.onerror = () => {
+      document.getElementById('statusDot').style.background = 'var(--yellow)';
+      loadDemoData();
+    };
+  } catch {
+    loadDemoData();
+  }
+}
+
+function loadDemoData() {
+  // Demo data for standalone testing
+  const demoTurns = [
+    { text: 'The turn chain needs Merkle anchoring before we can claim trustless verification.', actor: 'human:ben', stream: 'telegram', timestamp: new Date().toISOString() },
+    { text: 'compute_anchor() is a pure function. merkle_root() takes the receipt hashes and returns a single root. Same chain = same root, always.', actor: 'claude-sonnet-4-6', stream: 'telegram', timestamp: new Date().toISOString() },
+    { text: 'The sieve must be a pure function. No LLM calls in the promotion path.', actor: 'human:ben', stream: 'claude-code', timestamp: new Date().toISOString() },
+    { text: 'Wiring graph-lab relevance into promote() — replacing keyword matching.', actor: 'claude-sonnet-4-6', stream: 'claude-code', timestamp: new Date().toISOString() },
+  ];
+
+  const demoClaims = [
+    { text: 'The turn chain needs Merkle anchoring before trustless verification is possible', claim_type: 'constraint', confidence: 0.95, source: 'human:ben', stream: 'telegram' },
+    { text: 'compute_anchor() is a pure function: same chain = same root, always', claim_type: 'guarantee', confidence: 0.95, source: 'claude-sonnet-4-6', stream: 'telegram' },
+    { text: 'The sieve must contain no LLM calls in the promotion path', claim_type: 'constraint', confidence: 0.98, source: 'human:ben', stream: 'claude-code' },
+    { text: 'Graph-lab BFS relevance replaces keyword matching in promote()', claim_type: 'fact', confidence: 0.9, source: 'claude-sonnet-4-6', stream: 'claude-code' },
+  ];
+
+  demoTurns.forEach(ingestTurn);
+  demoClaims.forEach(ingestClaim);
+  renderAll();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+initTabs();
+connectSSE();
+</script>
+</body>
+</html>
