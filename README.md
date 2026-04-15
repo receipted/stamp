@@ -33,9 +33,9 @@ A receipted governance report containing:
 
 ## Why it matters
 
-Standard tools check syntax. Turnchain checks governance.
+Standard tools check syntax. Stamp checks governance.
 
-A function can pass linting, pass tests, pass code review — and still have the wrong trust boundary. Turnchain finds the semantic failures that look correct but aren't:
+A function can pass linting, pass tests, pass code review — and still have the wrong trust boundary. Stamp finds the semantic failures that look correct but aren't:
 
 - A "CSV helper" that secretly enables code execution ([CVE-2026-27966](https://nvd.nist.gov/vuln/detail/CVE-2026-27966))
 - A JWT verifier that lets the token choose its own verification algorithm ([CVE-2026-22817](https://nvd.nist.gov/vuln/detail/CVE-2026-22817))
