@@ -1,98 +1,173 @@
-# Substrate
+# Turnchain
 
-**Receipted execution for code, AI, and critical workflows.**
+**Receipted governance for code.**
 
-Internal: a forge for stamped semantic transforms.
+Post a codebase, get a signed governance report.
+Every function typed. Pure/impure boundaries classified.
+Dependency provenance gaps identified. Every finding receipted and independently verifiable.
 
-A receipt is proof that a specific transform ran on specific material and yielded a specific output.
+## Try it
 
-## The Primitive
+```bash
+# Analyze a GitHub repo
+curl -X POST https://substrate-api.fly.dev/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://github.com/your/repo"}'
 
-```
-input → pure function → stamped output
-```
-
-The stamp proves:
-- what went in
-- which function ran
-- what came out
-- what it chained from
-
-The successful handoff to the next pure function is the proof of usable I/O.
-
-## The Verb Stack
-
-```
-source → witness → transform → stamp → handoff → chain → project
+# Analyze a single file
+curl -X POST https://substrate-api.fly.dev/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"source": "import pickle\ndef load(p):\n    return pickle.loads(open(p,\"rb\").read())", "filename": "app.py"}'
 ```
 
-## The Noun Stack
+## What you get
+
+A receipted governance report containing:
+
+- **Function typing** — every function classified as CONTRACT, CONSTRAINT, UNCERTAINTY, RELATION, or WITNESS
+- **Purity analysis** — pure vs impure boundaries, with specific impurity signals (I/O, env vars, dangerous deserialization, network calls)
+- **Dangerous pattern detection** — `pickle.loads`, `eval`, `allow_dangerous_code=True`, and other semantic red flags
+- **Dependency provenance** — which dependencies are in-repo (stamped) vs external (unstamped)
+- **Smoking gun** — the single worst violation, highlighted
+- **Cryptographic receipt** — stamp proving what input was analyzed, which version of the analyzer ran, and what output was produced
+
+## Why it matters
+
+Standard tools check syntax. Turnchain checks governance.
+
+A function can pass linting, pass tests, pass code review — and still have the wrong trust boundary. Turnchain finds the semantic failures that look correct but aren't:
+
+- A "CSV helper" that secretly enables code execution ([CVE-2026-27966](https://nvd.nist.gov/vuln/detail/CVE-2026-27966))
+- A JWT verifier that lets the token choose its own verification algorithm ([CVE-2026-22817](https://nvd.nist.gov/vuln/detail/CVE-2026-22817))
+- A "safe" extractor that doesn't validate where writes actually land ([GHSA-m6w7-qv66-g3mf](https://github.com/bentoml/BentoML/security/advisories/GHSA-m6w7-qv66-g3mf))
+- A login validator that checks claims but never verifies the signature ([CVE-2026-31946](https://nvd.nist.gov/vuln/detail/CVE-2026-31946))
+
+Every finding is receipted. Every receipt is independently verifiable.
+
+## How it works
 
 ```
-source event → witness → transform result → receipt → chain → projection
+source code
+    → AST extraction (functions, imports, call graph)
+        → mother type classification (CONTRACT/CONSTRAINT/UNCERTAINTY/RELATION/WITNESS)
+            → purity analysis (I/O signals, dangerous patterns, env var reads)
+                → dependency provenance (stamped vs unstamped)
+                    → stamp(input_hash, fn_hash, output_hash, prev_stamp_hash)
+                        → receipt
 ```
 
-## Domain-Specific Chains Over One Primitive
+Every step in the pipeline is a deterministic transform. The receipt proves the entire chain ran faithfully.
 
-| Domain | Coin | Chain |
-|---|---|---|
-| Conversation | turn coin | turn chain |
-| Governance | sieve coin | sieve chain |
-| Healthcare | care coin | care chain |
-| Code intent | intent coin | intent chain |
-| Legal | evidence coin | evidence chain |
-| Finance | signal coin | signal chain |
+## Run locally
 
-These are all projections of the same lower primitive: a stamped pure function execution.
+```bash
+# Clone
+git clone https://github.com/receipted/stamp.git
+cd stamp
 
-## The Distilled Center
+# Install
+python3 -m venv .venv && .venv/bin/pip install pydantic
 
-Meaning-bearing state changes can be minted, chained, and re-executed through pure functions with portable proof.
+# Analyze
+.venv/bin/python3 stamp_cli.py analyze /path/to/your/code
 
-## The Coin Has Two Sides
+# Verify a receipt
+.venv/bin/python3 stamp_cli.py verify substrate-receipt-*.json
+```
 
-The same stamp, same pure function, same receipt. The difference is where the anchor lands.
+## The stamp primitive
 
-| | Open Source (free) | Paid |
-|---|---|---|
-| Pure function | Same | Same |
-| Receipt | Same | Same |
-| Chain | Local + git anchor | Local + git + L2 on-chain anchor |
-| Verification | Re-execute locally | ZK proof — verify without re-execution |
-| Proof URL | None (you verify yourself) | Public, permanent, shareable |
-| Trust model | "Run it yourself" | "Here's the proof, check the chain" |
+```
+stamp(input_hash, fn_hash, output_hash, prev_stamp_hash) → receipt
+```
 
-The open source side is the full substrate. The coin is real. The chain is real. The stamp is real. You just verify by re-running the function yourself.
+- **input_hash** — what went in
+- **fn_hash** — which function ran (hash of the actual source)
+- **output_hash** — what came out
+- **prev_stamp_hash** — what it chained from
 
-The paid side adds: ZK proof (don't need to re-run), on-chain anchor (don't need to trust the git host), and a proof URL (shareable verification without running anything). Same coin, more anchors.
+Same inputs → same receipt, always. Rust and Python implementations produce byte-identical output. 29 Rust tests + 21 Python parity tests enforce this.
 
-The sieve, the types, the stamp primitive — all open. The ZK circuit compilation and the on-chain verifier are the paid tier. You don't pay for governance. You pay for portable proof.
+## Concepts
 
-## Design Law
+| Term | What it means |
+|---|---|
+| **stamp** | mint a receipt for one transform |
+| **receipt** | the portable proof artifact |
+| **turn** | an attributed, sequenced, receipted coordination move |
+| **chain** | ordered history of receipts |
+| **verify** | check receipt integrity and lineage |
+| **mother type** | one of five governance facets: CONTRACT, CONSTRAINT, UNCERTAINTY, RELATION, WITNESS |
 
-**Loose at the edges, strict at the core.**
+## Five governance types
 
-Loose at the edges: messy inputs, imperfect hosts, different devices, partial context, real-world mud.
-Strict at the core: pure transforms, stamped receipts, explicit handoffs, verifiable chain.
+| Type | What it catches |
+|---|---|
+| **CONTRACT** | what a function promises to do |
+| **CONSTRAINT** | what must not happen (violated trust boundaries) |
+| **UNCERTAINTY** | what is unknown or unverified |
+| **RELATION** | how components depend on each other |
+| **WITNESS** | provenance — who observed what, when, with what authority |
 
-Not a lab ornament. A field tool. A durable semantic mechanism that survives bad surfaces without lying about what happened.
+## Rust binary
 
-## Types ARE Verticals
+```bash
+cd rust
+cargo build --release
 
-Each mother type is a customer segment's entry point:
-- CONTRACT → legal, API governance
-- CONSTRAINT → AppSec, compliance
-- UNCERTAINTY → clinical, risk management
-- RELATION → dependency analysis, supply chain
-- WITNESS → audit, provenance, chain of custody
+# Stamp, verify, chain
+./target/release/substrate stamp mint turn <input> <fn> <output>
+./target/release/substrate verify <ore_blob.json>
+./target/release/substrate turn-chain verify <chain.jsonl>
+./target/release/substrate ledger verify
+./target/release/substrate info
+```
 
-The type system is the go-to-market encoded as architecture. One axis, not two.
+573KB binary. No runtime dependencies.
 
-## What This Means
+## Project structure
 
-- `turn` is not the deepest primitive. `stamp` is deeper.
-- The hash chain is a sequence of pure function executions, not a data format.
-- The ZK proof verifies execution without re-running the function.
-- The smart contract contains the proof, not the data.
-- The apps are projections on top of the chain. The chain doesn't care about the domain.
-- We distilled down through the apps to find the primitive. Now we build back up.
+```
+rust/src/
+  stamp.rs     — the generic stamp primitive (pure, ZK-circuit-ready)
+  core.rs      — hash functions, chain building, Merkle trees
+  io.rs        — file I/O, session parsing
+  main.rs      — CLI
+
+src/surface/
+  stamp.py     — Python stamp (byte-identical to Rust)
+  analyzer.py  — AST-based code analysis engine
+  mother_types.py — five governance types + TypedUnit v0
+  report.py    — HTML report generator
+
+examples/
+  langflow-csv-agent/   — CVE-2026-27966 (AI code execution)
+  hono-jwt/             — CVE-2026-22817 (JWT algorithm confusion)
+  openolat-oidc/        — CVE-2026-31946 (missing signature verification)
+  bentoml-tarfile/      — GHSA-m6w7-qv66-g3mf (path traversal)
+  ml-service/           — reconstructed AI-generated inference service
+```
+
+## Status
+
+**Live.** API deployed at `substrate-api.fly.dev`. CLI and Rust binary working. Five real CVEs analyzed and receipted.
+
+Current focus: May 1st demo — one canonical example (Langflow CSV Agent), one receipt, one verify.
+
+## What this repo is not
+
+This repo is the engine and verification tools. It is not:
+- A dashboard or UI
+- A policy engine (the governance sieve is not in this repo)
+- An on-chain verifier (planned, not built)
+- A replacement for SAST/linting (it finds what those tools miss)
+
+## License
+
+TBD
+
+---
+
+*We review AI's code with a hashchained ratification engine.*
+
+**[receipted](https://github.com/receipted)** · [turnchain](https://github.com/turnchain)
