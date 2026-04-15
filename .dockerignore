@@ -1,0 +1,16 @@
+.venv
+.git
+__pycache__
+*.pyc
+rust/target
+projects/
+examples/
+research/
+memory/
+specs/
+*.md
+*.json
+*.html
+substrate-receipt-*
+substrate-report-*
+substrate-anchor*

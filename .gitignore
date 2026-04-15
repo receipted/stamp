@@ -1,0 +1,17 @@
+# Build artifacts
+rust/target/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.venv/
+.env
+
+# OS
+.DS_Store
+
+# Receipts (generated, not source)
+substrate-receipt-*.json
+substrate-report-*.html
+substrate-anchor*.json
