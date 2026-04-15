@@ -152,7 +152,7 @@ examples/
 
 **Live.** API deployed at `substrate-api.fly.dev`. CLI and Rust binary working. Five real CVEs analyzed and receipted.
 
-Current focus: May 1st demo — one canonical example (Langflow CSV Agent), one receipt, one verify.
+Current focus: demo — one canonical example (Langflow CSV Agent), one receipt, one verify.
 
 ## What this repo is not
 
