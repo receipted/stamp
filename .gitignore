@@ -15,3 +15,7 @@ __pycache__/
 substrate-receipt-*.json
 substrate-report-*.html
 substrate-anchor*.json
+
+# Databases
+*.db
+*.sqlite
