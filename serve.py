@@ -23,9 +23,27 @@ from urllib.parse import urlparse, parse_qs
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.surface.analyzer import analyze_repo
-from src.surface.stamp import stamp, h, GENESIS
+from src.surface.stamp import stamp, h, GENESIS, hash_analysis_payload
 
 PORT = int(os.environ.get("SUBSTRATE_PORT", "7799"))
+
+# --- Clone URL validation (SSRF guard) ---
+
+_ALLOWED_CLONE_HOSTS = {"github.com", "gitlab.com", "bitbucket.org"}
+
+
+def _validate_clone_url(url: str) -> str | None:
+    """Validate a git clone URL. Returns error string or None if ok."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("https",):
+        return f"only HTTPS URLs allowed (got {parsed.scheme!r})"
+    if parsed.hostname not in _ALLOWED_CLONE_HOSTS:
+        return f"host {parsed.hostname!r} not in allowlist: {sorted(_ALLOWED_CLONE_HOSTS)}"
+    if parsed.port is not None:
+        return "custom ports not allowed"
+    if ".." in parsed.path:
+        return "path traversal not allowed"
+    return None
 MAX_SIZE = 50 * 1024 * 1024  # 50MB
 MAX_FILES = 1000
 ANALYSIS_TIMEOUT = 60
@@ -56,12 +74,12 @@ def _build_receipt(files: dict[str, str], result: dict) -> dict:
     analyzer_path = Path(__file__).parent / "src" / "surface" / "analyzer.py"
     fn_hash = h(analyzer_path.read_bytes()) if analyzer_path.exists() else h(b"unknown")
 
-    output_hash = h(json.dumps(result["summary"], sort_keys=True).encode())
+    output_hash = hash_analysis_payload(result)
 
     analysis_stamp = stamp("analyze", input_hash, fn_hash, output_hash, GENESIS)
 
     return {
-        "schema": "substrate.receipt.v0",
+        "schema": "substrate.receipt.v1",
         "analysis": result,
         "stamp": {
             "schema": analysis_stamp.schema,
@@ -135,6 +153,11 @@ class Handler(BaseHTTPRequestHandler):
             # GitHub URL: {"url": "https://github.com/org/repo"}
             import subprocess, tempfile
             url = payload["url"].rstrip("/")
+            # SSRF guard: validate before clone
+            err = _validate_clone_url(url)
+            if err:
+                self._json_response(400, {"error": f"invalid URL: {err}"})
+                return
             if not url.endswith(".git"):
                 url += ".git"
             tmp = tempfile.mkdtemp(prefix="substrate-")

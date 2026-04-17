@@ -132,6 +132,47 @@ def _merkle_root(hashes: list[str]) -> str:
     return layer[0].hex()
 
 
+# --- Receipt payload binding ---
+
+def hash_analysis_payload(result: dict) -> str:
+    """Canonical hash of a full analysis result for receipt output_hash binding.
+
+    This is the single source of truth: both receipt generation and
+    verification must use this function. The receipt stamps the ENTIRE
+    analysis — not just the summary — so that tampering with any field
+    (violations, per-file data, etc.) invalidates the stamp.
+    """
+    return h(_canonical_json(result).encode())
+
+
+def verify_receipt_payload(receipt: dict) -> tuple[bool, str]:
+    """Verify that a receipt's stamp actually binds its analysis payload.
+
+    Returns (ok, message). Checks that:
+    1. The receipt contains an analysis payload
+    2. The stamp's output_hash matches the canonical hash of that payload
+
+    This is the fix for the P0: without this check, verify only proved
+    the stamp was internally consistent, not that it covered the payload.
+    """
+    analysis = receipt.get("analysis")
+    if analysis is None:
+        return False, "receipt has no analysis payload to verify"
+
+    stmp = receipt.get("stamp", {})
+    claimed_output_hash = stmp.get("output_hash", "")
+    recomputed = hash_analysis_payload(analysis)
+
+    if recomputed != claimed_output_hash:
+        return False, (
+            f"payload tampered — output_hash mismatch\n"
+            f"  stamp claims:   {claimed_output_hash[:40]}...\n"
+            f"  payload actual: {recomputed[:40]}..."
+        )
+
+    return True, "payload binding verified"
+
+
 # --- Domain wrappers ---
 
 def stamp_turn(input_hash: str, fn_hash: str, output_hash: str, prev: str) -> Stamp:
